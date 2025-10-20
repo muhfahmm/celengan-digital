@@ -1,72 +1,72 @@
 <?php
 session_start();
-include('../../config/db_connect.php');
+include('../../config/db.php');
 
 // Pastikan hanya POST request yang diterima dan user sudah login
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['user_id'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+    header('Location: ../../index.php');
     exit;
 }
 
 $user_id = $_SESSION['user_id'];
 
 // Ambil dan bersihkan data dari POST
-$nama_tabungan = $_POST['nama_tabungan'] ?? '';
+$nama_tabungan = trim($_POST['nama_tabungan'] ?? '');
 $target_tabungan = filter_var($_POST['target_tabungan'] ?? 0, FILTER_VALIDATE_FLOAT);
 $mata_uang = $_POST['mata_uang'] ?? 'IDR';
 $rencana_pengisian = $_POST['rencana_pengisian'] ?? '';
 $nominal_pengisian = filter_var($_POST['nominal_pengisian'] ?? 0, FILTER_VALIDATE_FLOAT);
 
 // Validasi dasar
-if (empty($nama_tabungan) || $target_tabungan <= 0 || $nominal_pengisian <= 0) {
-    // Lebih baik kembali ke form dengan pesan error
+if (empty($nama_tabungan) || $target_tabungan <= 0 || $nominal_pengisian <= 0 || !in_array($rencana_pengisian, ['Harian', 'Mingguan', 'Bulanan'])) {
     header('Location: ../tambah-celengan.php?error=invalid_data');
     exit;
 }
 
-// Hitung estimasi tanggal tercapai (sederhana: hanya berdasarkan harian)
-// Asumsi: jika rencana_pengisian bukan harian, nominal_pengisian dikonversi ke harian
-$nominal_harian = $nominal_pengisian;
+// --- Hitung Estimasi Tanggal Tercapai ---
+$nominal_harian_estimasi = $nominal_pengisian;
 if ($rencana_pengisian == 'Mingguan') {
-    $nominal_harian = $nominal_pengisian / 7;
+    $nominal_harian_estimasi = $nominal_pengisian / 7;
 } elseif ($rencana_pengisian == 'Bulanan') {
-    $nominal_harian = $nominal_pengisian / 30; // Asumsi 30 hari/bulan
+    $nominal_harian_estimasi = $nominal_pengisian / 30.437; // Rata-rata hari per bulan
 }
 
-$sisa_kebutuhan = $target_tabungan;
-$jumlah_hari_dibutuhkan = ceil($sisa_kebutuhan / $nominal_harian);
+// Cek jika nominal harian terlalu kecil
+if ($nominal_harian_estimasi <= 0) {
+    header('Location: ../tambah-celengan.php?error=zero_deposit');
+    exit;
+}
+
+$sisa_kebutuhan = $target_tabungan; // Saat baru dibuat, terkumpul = 0
+$jumlah_hari_dibutuhkan = ceil($sisa_kebutuhan / $nominal_harian_estimasi);
 $tanggal_estimasi = date('Y-m-d', strtotime("+$jumlah_hari_dibutuhkan days"));
 
+// --- Query Database ---
+try {
+    $sql = "INSERT INTO celengan 
+            (user_id, nama_tabungan, target_tabungan, mata_uang, rencana_pengisian, nominal_pengisian, terkumpul, tanggal_estimasi) 
+            VALUES (:user_id, :nama, :target, :mata_uang, :rencana, :nominal, :terkumpul, :estimasi)";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        'user_id' => $user_id, 
+        'nama' => $nama_tabungan, 
+        'target' => $target_tabungan, 
+        'mata_uang' => $mata_uang, 
+        'rencana' => $rencana_pengisian, 
+        'nominal' => $nominal_pengisian, 
+        'terkumpul' => 0.00,
+        'estimasi' => $tanggal_estimasi
+    ]);
 
-// Query untuk memasukkan data
-$sql = "INSERT INTO celengan 
-        (user_id, nama_tabungan, target_tabungan, mata_uang, rencana_pengisian, nominal_pengisian, tanggal_estimasi) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
-$stmt = $conn->prepare($sql);
-$stmt->bind_param(
-    "isdsdds", 
-    $user_id, 
-    $nama_tabungan, 
-    $target_tabungan, 
-    $mata_uang, 
-    $rencana_pengisian, 
-    $nominal_pengisian, 
-    $tanggal_estimasi
-);
-
-if ($stmt->execute()) {
     // Berhasil disimpan, arahkan kembali ke halaman utama
     header('Location: ../../index.php?success=added');
     exit;
-} else {
-    // Gagal menyimpan, kembali ke form
-    // echo "Error: " . $stmt->error;
+
+} catch (PDOException $e) {
+    // Log error
+    // error_log("DB Error: " . $e->getMessage());
     header('Location: ../tambah-celengan.php?error=db_fail');
     exit;
 }
-
-$stmt->close();
-$conn->close();
 ?>

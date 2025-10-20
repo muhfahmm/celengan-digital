@@ -1,0 +1,99 @@
+/* --- Tambahan untuk Authentication --- */
+.auth-container {
+    max-width: 350px;
+    margin: 60px auto;
+    padding: 20px;
+    background-color: #1f1f1f;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.auth-container h1 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 25px;
+}
+
+/* --- Tambahan untuk Detail Celengan (edit-celengan.php) --- */
+.detail-container {
+    padding: 20px;
+}
+
+.card {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.detail-header-card h3 {
+    font-size: 2em;
+    color: #fff;
+}
+
+.meta-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #999;
+}
+
+.detail-summary-card {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding-bottom: 30px; /* Ruang untuk last-update */
+}
+
+.detail-summary-card h3 {
+    margin-top: 5px;
+}
+
+.last-update {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #666;
+}
+
+/* --- Modal Styling --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; 
+    z-index: 10; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6); 
+}
+
+.modal-content {
+    background-color: #1f1f1f;
+    margin: 15% auto; 
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%; 
+    max-width: 400px;
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
