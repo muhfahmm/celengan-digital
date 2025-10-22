@@ -3,8 +3,8 @@ session_start();
 include('../../config/db.php');
 
 if (!isset($_SESSION['user_id'])) {
-  header("Location: ../../auth/login.php");
-  exit;
+    header("Location: ../../auth/login.php");
+    exit;
 }
 
 $celengan_id = $_POST['celengan_id'];
@@ -17,11 +17,10 @@ $stmt->execute([$celengan_id, $nominal, $tipe, $keterangan]);
 
 // Update total di tabel celengan
 if ($tipe == 'masuk') {
-  $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")->execute([$nominal, $celengan_id]);
+    $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")->execute([$nominal, $celengan_id]);
 } else {
-  $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")->execute([$nominal, $celengan_id]);
+    $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")->execute([$nominal, $celengan_id]);
 }
 
 header("Location: ../../dashboard/index.php");
 exit;
-?>

@@ -1,8 +1,8 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-  header("Location: ../auth/login.php");
-  exit;
+    header("Location: ../auth/login.php");
+    exit;
 }
 include('../config/db.php');
 
@@ -12,4 +12,3 @@ $stmt->execute([$id, $_SESSION['user_id']]);
 
 header("Location: ../dashboard/index.php");
 exit;
-?>

@@ -3,8 +3,8 @@ session_start();
 include('../../config/db.php');
 
 if (!isset($_SESSION['user_id'])) {
-  header("Location: ../../auth/login.php");
-  exit;
+    header("Location: ../../auth/login.php");
+    exit;
 }
 
 $id = $_POST['id'];
@@ -18,29 +18,28 @@ $stmt->execute([$id]);
 $old = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($old) {
-  // Balikkan efek lama dulu
-  if ($old['tipe'] == 'masuk') {
-    $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
-        ->execute([$old['nominal'], $old['celengan_id']]);
-  } else {
-    $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
-        ->execute([$old['nominal'], $old['celengan_id']]);
-  }
+    // Balikkan efek lama dulu
+    if ($old['tipe'] == 'masuk') {
+        $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
+            ->execute([$old['nominal'], $old['celengan_id']]);
+    } else {
+        $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
+            ->execute([$old['nominal'], $old['celengan_id']]);
+    }
 
-  // Update transaksi baru
-  $stmt = $pdo->prepare("UPDATE transaksi SET nominal = ?, tipe = ?, keterangan = ? WHERE id = ?");
-  $stmt->execute([$nominal, $tipe, $keterangan, $id]);
+    // Update transaksi baru
+    $stmt = $pdo->prepare("UPDATE transaksi SET nominal = ?, tipe = ?, keterangan = ? WHERE id = ?");
+    $stmt->execute([$nominal, $tipe, $keterangan, $id]);
 
-  // Terapkan efek baru
-  if ($tipe == 'masuk') {
-    $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
-        ->execute([$nominal, $old['celengan_id']]);
-  } else {
-    $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
-        ->execute([$nominal, $old['celengan_id']]);
-  }
+    // Terapkan efek baru
+    if ($tipe == 'masuk') {
+        $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
+            ->execute([$nominal, $old['celengan_id']]);
+    } else {
+        $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
+            ->execute([$nominal, $old['celengan_id']]);
+    }
 }
 
 header("Location: ../../dashboard/index.php");
 exit;
-?>

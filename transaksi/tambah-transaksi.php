@@ -6,43 +6,69 @@ if (!isset($_SESSION['user_id'])) {
 }
 include('../config/db.php');
 
+// Ambil ID celengan dari URL
+if (!isset($_GET['celengan_id'])) {
+  header("Location: ../dashboard/index.php");
+  exit;
+}
+$celengan_id = $_GET['celengan_id'];
 $user_id = $_SESSION['user_id'];
-$celengan = $pdo->prepare("SELECT * FROM celengan WHERE user_id = ?");
-$celengan->execute([$user_id]);
-$listCelengan = $celengan->fetchAll(PDO::FETCH_ASSOC);
+
+// Ambil data celengan berdasarkan id dan user
+$stmt = $pdo->prepare("SELECT * FROM celengan WHERE id = ? AND user_id = ?");
+$stmt->execute([$celengan_id, $user_id]);
+$celengan = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Jika celengan tidak ditemukan
+if (!$celengan) {
+  echo "<script>alert('Celengan tidak ditemukan'); window.location='../dashboard/index.php';</script>";
+  exit;
+}
 ?>
 <!DOCTYPE html>
 <html>
 <head>
   <title>Tambah Transaksi</title>
   <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .form-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background: #f9f9f9;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+    }
+  </style>
 </head>
 <body>
   <div class="form-container">
     <h2>Tambah Transaksi</h2>
+    <p>Celengan: <strong><?php echo htmlspecialchars($celengan['nama_celengan']); ?></strong></p>
+
     <form action="api/api-tambah-transaksi.php" method="POST">
-      <label>Pilih Celengan</label><br>
-      <select name="celengan_id" required>
-        <option value="">Pilih Celengan</option>
-        <?php foreach ($listCelengan as $c): ?>
-          <option value="<?php echo $c['id']; ?>"><?php echo $c['nama_celengan']; ?></option>
-        <?php endforeach; ?>
-      </select><br>
+      <input type="hidden" name="celengan_id" value="<?php echo $celengan['id']; ?>">
 
-      <label>Nominal</label><br>
-      <input type="number" name="nominal" required><br>
+      <label>Nominal</label>
+      <input type="number" name="nominal" required>
 
-      <label>Tipe</label><br>
+      <label>Tipe Transaksi</label>
       <select name="tipe" required>
         <option value="masuk">Masuk</option>
         <option value="keluar">Keluar</option>
-      </select><br>
+      </select>
 
-      <label>Keterangan</label><br>
-      <input type="text" name="keterangan"><br>
+      <label>Keterangan</label>
+      <input type="text" name="keterangan">
 
       <button type="submit">Simpan</button>
     </form>
+
     <a href="../dashboard/index.php">Kembali</a>
   </div>
 </body>

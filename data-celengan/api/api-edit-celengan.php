@@ -3,8 +3,8 @@ session_start();
 include('../../config/db.php');
 
 if (!isset($_SESSION['user_id'])) {
-  header("Location: ../../auth/login.php");
-  exit;
+    header("Location: ../../auth/login.php");
+    exit;
 }
 
 $id = $_POST['id'];
@@ -16,4 +16,3 @@ $stmt->execute([$nama, $target, $id, $_SESSION['user_id']]);
 
 header("Location: ../../dashboard/index.php");
 exit;
-?>

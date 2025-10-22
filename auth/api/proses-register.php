@@ -10,4 +10,3 @@ $stmt->execute([$username, $email, $password]);
 
 header("Location: ../login.php?status=success");
 exit;
-?>
