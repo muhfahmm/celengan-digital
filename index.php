@@ -5,4 +5,3 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 header('Location: dashboard.php');
-?>
