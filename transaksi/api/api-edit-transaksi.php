@@ -18,7 +18,7 @@ $stmt->execute([$id]);
 $old = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($old) {
-    // Balikkan efek lama dulu
+    // Balikkan efek lama
     if ($old['tipe'] == 'masuk') {
         $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
             ->execute([$old['nominal'], $old['celengan_id']]);
@@ -39,7 +39,9 @@ if ($old) {
         $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")
             ->execute([$nominal, $old['celengan_id']]);
     }
-}
 
-header("Location: ../../dashboard/index.php");
-exit;
+    // Redirect dengan id celengan
+    header("Location: ../../dashboard/detail-celengan.php?id=" . $old['celengan_id']);
+    exit;
+}
+?>

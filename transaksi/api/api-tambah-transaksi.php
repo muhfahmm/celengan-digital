@@ -12,6 +12,7 @@ $nominal = $_POST['nominal'];
 $tipe = $_POST['tipe'];
 $keterangan = $_POST['keterangan'] ?? '';
 
+// Simpan transaksi
 $stmt = $pdo->prepare("INSERT INTO transaksi (celengan_id, nominal, tipe, keterangan) VALUES (?, ?, ?, ?)");
 $stmt->execute([$celengan_id, $nominal, $tipe, $keterangan]);
 
@@ -22,5 +23,7 @@ if ($tipe == 'masuk') {
     $pdo->prepare("UPDATE celengan SET total = total - ? WHERE id = ?")->execute([$nominal, $celengan_id]);
 }
 
-header("Location: ../../dashboard/index.php");
+// Redirect ke halaman detail celengan dengan id yang sama
+header("Location: ../../dashboard/detail-celengan.php?id=" . $celengan_id);
 exit;
+?>
