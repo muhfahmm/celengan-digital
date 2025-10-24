@@ -100,7 +100,8 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td>
                             <a href="../data-celengan/edit-celengan.php?id=<?php echo $c['id']; ?>">Edit</a> |
                             <a href="../data-celengan/hapus-celengan.php?id=<?php echo $c['id']; ?>" onclick="return confirm('Yakin ingin menghapus?')">Hapus</a> |
-                            <a href="../transaksi/tambah-transaksi.php?celengan_id=<?php echo $c['id']; ?>">Tambah Progress</a>
+                            <a href="../transaksi/tambah-transaksi.php?celengan_id=<?php echo $c['id']; ?>">Tambah Progress</a> |
+                            <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?php echo $c['id']; ?>">Kurangi Progress</a>
                         </td>
                     </tr>
                 </table>

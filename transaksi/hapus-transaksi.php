@@ -6,6 +6,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 include('../config/db.php');
 
+if (!isset($_GET['id'])) {
+    die("ID transaksi tidak ditemukan");
+}
+
 $id = $_GET['id'];
 
 // Ambil data transaksi
@@ -14,14 +18,20 @@ $stmt->execute([$id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($data) {
-    // Update total celengan
+    $celengan_id = $data['celengan_id'];
+
+    // Update total celengan (balikkan pengaruh transaksi yang dihapus)
     $update = $data['tipe'] == 'masuk' ? -$data['nominal'] : $data['nominal'];
     $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
-        ->execute([$update, $data['celengan_id']]);
+        ->execute([$update, $celengan_id]);
 
     // Hapus transaksi
     $pdo->prepare("DELETE FROM transaksi WHERE id = ?")->execute([$id]);
-}
 
-header("Location: ../dashboard/index.php");
-exit;
+    // Kembali ke halaman detail celengan dengan parameter id
+    header("Location: ../dashboard/detail-celengan.php?id=" . $celengan_id);
+    exit;
+} else {
+    die("Data transaksi tidak ditemukan");
+}
+?>

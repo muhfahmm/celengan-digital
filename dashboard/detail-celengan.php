@@ -22,7 +22,7 @@ if (!$celengan) {
     die("Data celengan tidak ditemukan");
 }
 
-// Ambil daftar transaksi celengan
+// Ambil daftar transaksi
 $stmt_transaksi = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal DESC");
 $stmt_transaksi->execute([$celengan_id]);
 $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
@@ -99,6 +99,29 @@ function rupiah($angka) {
             background: #45a049;
         }
 
+        .btn-edit, .btn-hapus {
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-edit {
+            background-color: #2196F3;
+        }
+
+        .btn-hapus {
+            background-color: #f44336;
+        }
+
+        .btn-edit:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-hapus:hover {
+            background-color: #d32f2f;
+        }
+
         h2 {
             margin-bottom: 5px;
         }
@@ -129,6 +152,7 @@ function rupiah($angka) {
                     <th>Nominal</th>
                     <th>Jenis</th>
                     <th>Keterangan</th>
+                    <th>Aksi</th>
                 </tr>
                 <?php 
                 $no = 1;
@@ -138,10 +162,14 @@ function rupiah($angka) {
                     <td><?= $no++; ?></td>
                     <td><?= htmlspecialchars($t['tanggal']); ?></td>
                     <td><?= rupiah($t['nominal']); ?></td>
-                    <td style="color: <?= $t['tipe'] == 'Masuk' ? 'red' : 'green'; ?>;">
+                    <td style="color: <?= strtolower($t['tipe']) == 'masuk' ? 'green' : 'red'; ?>;">
                         <?= htmlspecialchars($t['tipe']); ?>
                     </td>
                     <td><?= htmlspecialchars($t['keterangan']); ?></td>
+                    <td>
+                        <a href="../transaksi/edit-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" class="btn-edit">Edit</a>
+                        <a href="../transaksi/hapus-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" class="btn-hapus" onclick="return confirm('Yakin ingin menghapus transaksi ini?')">Hapus</a>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </table>
