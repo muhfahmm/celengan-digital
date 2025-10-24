@@ -74,7 +74,12 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $progress = $c['target'] > 0 ? round(($c['total'] / $c['target']) * 100) : 0;
         ?>
             <div class="celengan-card">
-                <div class="celengan-title"><?php echo $no++ . '. ' . htmlspecialchars($c['nama_celengan']); ?></div>
+                <a href="detail-celengan.php?id=<?= $c['id']; ?>">
+                    <div class="celengan-title">
+                        <?= $no++ . '. ' . htmlspecialchars($c['nama_celengan']); ?>
+                    </div>
+                </a>
+
 
                 <table>
                     <tr>
