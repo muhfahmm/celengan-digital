@@ -43,22 +43,33 @@ $labels = [];
 $data = [];
 $colors = [];
 
+$total = 0;
+$labels = [];
+$saldo_awal = [];
+$saldo_akhir = [];
+$colors = [];
+
 foreach ($transaksi as $t) {
     $labels[] = $t['tanggal'];
-    $nominal = (float)$t['nominal'];
+    $saldo_awal[] = $total; // posisi sebelum transaksi
 
+    $nominal = (float)$t['nominal'];
     if (strtolower($t['tipe']) == 'masuk') {
-        $data[] = $nominal;
-        $colors[] = 'rgba(0, 200, 83, 0.8)'; // hijau
+        $total += $nominal;
+        $colors[] = 'rgba(0, 200, 83, 0.8)'; // hijau naik
     } else {
-        $data[] = -$nominal;
-        $colors[] = 'rgba(244, 67, 54, 0.8)'; // merah
+        $total -= $nominal;
+        $colors[] = 'rgba(244, 67, 54, 0.8)'; // merah turun
     }
+
+    $saldo_akhir[] = $total; // posisi setelah transaksi
 }
+
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -116,7 +127,8 @@ foreach ($transaksi as $t) {
             margin-top: 15px;
         }
 
-        th, td {
+        th,
+        td {
             border-bottom: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -137,7 +149,8 @@ foreach ($transaksi as $t) {
             margin-bottom: 20px;
         }
 
-        .btn-edit, .btn-hapus {
+        .btn-edit,
+        .btn-hapus {
             padding: 5px 10px;
             border-radius: 4px;
             text-decoration: none;
@@ -145,13 +158,31 @@ foreach ($transaksi as $t) {
             font-size: 13px;
         }
 
-        .btn-edit { background-color: #2196F3; }
-        .btn-hapus { background-color: #f44336; }
-        .btn-edit:hover { background-color: #1976D2; }
-        .btn-hapus:hover { background-color: #d32f2f; }
+        .btn-edit {
+            background-color: #2196F3;
+        }
 
-        h2 { margin-bottom: 5px; color: #333; }
-        h3 { margin-top: 30px; color: #333; }
+        .btn-hapus {
+            background-color: #f44336;
+        }
+
+        .btn-edit:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-hapus:hover {
+            background-color: #d32f2f;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        h3 {
+            margin-top: 30px;
+            color: #333;
+        }
 
         #chartContainer {
             margin-top: 40px;
@@ -227,8 +258,8 @@ foreach ($transaksi as $t) {
             data: {
                 labels: <?= json_encode($labels); ?>,
                 datasets: [{
-                    label: 'Nominal Transaksi',
-                    data: <?= json_encode($data); ?>,
+                    label: 'Perubahan Saldo',
+                    data: <?= json_encode(array_map(null, $saldo_awal, $saldo_akhir)); ?>,
                     backgroundColor: <?= json_encode($colors); ?>,
                     borderColor: <?= json_encode($colors); ?>,
                     borderWidth: 1
@@ -237,21 +268,44 @@ foreach ($transaksi as $t) {
             options: {
                 responsive: true,
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            display: false
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
                                 return 'Rp' + value.toLocaleString('id-ID');
                             }
+                        },
+                        grid: {
+                            color: 'rgba(220,220,220,0.3)'
                         }
                     }
                 },
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return 'Rp' + context.raw.toLocaleString('id-ID');
+                                const start = context.raw[0];
+                                const end = context.raw[1];
+                                const diff = end - start;
+                                return [
+                                    'Sebelum: Rp' + start.toLocaleString('id-ID'),
+                                    'Sesudah: Rp' + end.toLocaleString('id-ID'),
+                                    (diff >= 0 ? 'Naik: +' : 'Turun: ') + 'Rp' + Math.abs(diff).toLocaleString('id-ID')
+                                ];
                             }
                         }
                     }
@@ -259,5 +313,7 @@ foreach ($transaksi as $t) {
             }
         });
     </script>
+
 </body>
+
 </html>
