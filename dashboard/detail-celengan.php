@@ -321,138 +321,136 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 }
             </style>
         </div>
+        <script>
+            const rawLabels = <?= json_encode($labels); ?>;
+            const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
+            const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
+            const rawColors = <?= json_encode($colors); ?>;
 
-    </div>
+            const ctx = document.getElementById('chartTransaksi').getContext('2d');
+            let chart;
 
-    <script>
-        const rawLabels = <?= json_encode($labels); ?>;
-        const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
-        const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
-        const rawColors = <?= json_encode($colors); ?>;
+            function filterData(range) {
+                const now = new Date();
+                const filteredLabels = [];
+                const filteredData = [];
+                const filteredColors = [];
 
-        const ctx = document.getElementById('chartTransaksi').getContext('2d');
-        let chart;
+                for (let i = 0; i < rawLabels.length; i++) {
+                    const tgl = new Date(rawLabels[i]);
+                    let include = false;
 
-        function filterData(range) {
-            const now = new Date();
-            const filteredLabels = [];
-            const filteredData = [];
-            const filteredColors = [];
+                    switch (range) {
+                        case '1D':
+                            include = (now - tgl) / (1000 * 60 * 60 * 24) <= 1;
+                            break;
+                        case '1W':
+                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 7) <= 1;
+                            break;
+                        case '1M':
+                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 30) <= 1;
+                            break;
+                        case '3M':
+                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 90) <= 1;
+                            break;
+                        case '1Y':
+                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 365) <= 1;
+                            break;
+                        case 'ALL':
+                            include = true;
+                            break;
+                    }
 
-            for (let i = 0; i < rawLabels.length; i++) {
-                const tgl = new Date(rawLabels[i]);
-                let include = false;
-
-                switch (range) {
-                    case '1D':
-                        include = (now - tgl) / (1000 * 60 * 60 * 24) <= 1;
-                        break;
-                    case '1W':
-                        include = (now - tgl) / (1000 * 60 * 60 * 24 * 7) <= 1;
-                        break;
-                    case '1M':
-                        include = (now - tgl) / (1000 * 60 * 60 * 24 * 30) <= 1;
-                        break;
-                    case '3M':
-                        include = (now - tgl) / (1000 * 60 * 60 * 24 * 90) <= 1;
-                        break;
-                    case '1Y':
-                        include = (now - tgl) / (1000 * 60 * 60 * 24 * 365) <= 1;
-                        break;
-                    case 'ALL':
-                        include = true;
-                        break;
+                    if (include) {
+                        filteredLabels.push(rawLabels[i]);
+                        filteredData.push([rawSaldoAwal[i], rawSaldoAkhir[i]]);
+                        filteredColors.push(rawColors[i]);
+                    }
                 }
 
-                if (include) {
-                    filteredLabels.push(rawLabels[i]);
-                    filteredData.push([rawSaldoAwal[i], rawSaldoAkhir[i]]);
-                    filteredColors.push(rawColors[i]);
-                }
+                chart.data.labels = filteredLabels;
+                chart.data.datasets[0].data = filteredData;
+                chart.data.datasets[0].backgroundColor = filteredColors;
+                chart.update();
             }
 
-            chart.data.labels = filteredLabels;
-            chart.data.datasets[0].data = filteredData;
-            chart.data.datasets[0].backgroundColor = filteredColors;
-            chart.update();
-        }
-
-        function initChart() {
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: rawLabels,
-                    datasets: [{
-                        label: 'Perubahan Saldo',
-                        data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
-                        backgroundColor: rawColors,
-                        borderColor: rawColors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                display: false
-                            },
-                            border: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp' + value.toLocaleString('id-ID');
+            function initChart() {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawLabels,
+                        datasets: [{
+                            label: 'Perubahan Saldo',
+                            data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
+                            backgroundColor: rawColors,
+                            borderColor: rawColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    display: false
+                                },
+                                border: {
+                                    display: false
                                 }
                             },
-                            grid: {
-                                color: 'rgba(220,220,220,0.3)'
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp' + value.toLocaleString('id-ID');
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(220,220,220,0.3)'
+                                }
                             }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const start = context.raw[0];
-                                    const end = context.raw[1];
-                                    const diff = end - start;
-                                    return [
-                                        'Sebelum: Rp' + start.toLocaleString('id-ID'),
-                                        'Sesudah: Rp' + end.toLocaleString('id-ID'),
-                                        (diff >= 0 ? 'Naik: +' : 'Turun: ') + 'Rp' + Math.abs(diff).toLocaleString('id-ID')
-                                    ];
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const start = context.raw[0];
+                                        const end = context.raw[1];
+                                        const diff = end - start;
+                                        return [
+                                            'Sebelum: Rp' + start.toLocaleString('id-ID'),
+                                            'Sesudah: Rp' + end.toLocaleString('id-ID'),
+                                            (diff >= 0 ? 'Naik: +' : 'Turun: ') + 'Rp' + Math.abs(diff).toLocaleString('id-ID')
+                                        ];
+                                    }
                                 }
                             }
                         }
                     }
-                }
+                });
+            }
+
+            initChart();
+
+            // Event untuk tombol filter
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterData(this.dataset.range);
+                });
             });
-        }
 
-        initChart();
-
-        // Event untuk tombol filter
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                filterData(this.dataset.range);
-            });
-        });
-
-        // Set default aktif di "ALL"
-        document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
-    </script>
+            // Set default aktif di "ALL"
+            document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
+        </script>
+    </div>
 
 
 </body>

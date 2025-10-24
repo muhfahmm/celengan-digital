@@ -4,4 +4,5 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: auth/login.php');
     exit;
 }
-header('Location: dashboard.php');
+header('Location: dashboard/index.php');
+?>
