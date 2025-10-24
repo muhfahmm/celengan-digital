@@ -174,7 +174,7 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="container">
         <h3>Daftar Celengan</h3>
-        <a href="../data-celengan/tambah-celengan.php" class="btn">+ Tambah Celengan</a>
+        <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
 
         <?php if (count($celengan) > 0): ?>
             <?php
@@ -207,7 +207,7 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </td>
                             <td>
                                 <a href="../data-celengan/edit-celengan.php?id=<?php echo $c['id']; ?>">Edit</a> |
-                                <a href="../data-celengan/hapus-celengan.php?id=<?php echo $c['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a> |
+                                <a href="../data-celengan/hapus-celengan.php?id=<?php echo $c['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a>
                             </td>
                         </tr>
                     </table>

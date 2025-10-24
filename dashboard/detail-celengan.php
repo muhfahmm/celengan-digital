@@ -65,6 +65,25 @@ foreach ($transaksi as $t) {
     $saldo_akhir[] = $total; // posisi setelah transaksi
 }
 
+// --- Pagination setup ---
+$limit = 10; // jumlah data per halaman
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Hitung total transaksi
+$count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
+$count_stmt->execute([$celengan_id]);
+$total_transaksi = $count_stmt->fetchColumn();
+$total_pages = ceil($total_transaksi / $limit);
+
+// Ambil daftar transaksi per halaman
+$stmt_transaksi = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal ASC LIMIT ? OFFSET ?");
+$stmt_transaksi->bindValue(1, $celengan_id, PDO::PARAM_INT);
+$stmt_transaksi->bindValue(2, $limit, PDO::PARAM_INT);
+$stmt_transaksi->bindValue(3, $offset, PDO::PARAM_INT);
+$stmt_transaksi->execute();
+$transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -199,6 +218,9 @@ foreach ($transaksi as $t) {
 
             <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>">Tambah Progress</a> |
             <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?= $celengan['id']; ?>">Kurangi Progress</a>
+            <br>
+            <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>">Edit</a> |
+            <a href="../data-celengan/hapus-celengan.php?id=<?= $celengan['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a>
 
             <p><b>Total:</b> <?= rupiah($celengan['total']); ?></p>
             <p><b>Target:</b> <?= rupiah($celengan['target']); ?></p>
@@ -242,6 +264,26 @@ foreach ($transaksi as $t) {
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                <?php if ($total_pages > 1): ?>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <?php if ($page > 1): ?>
+                            <a href="?id=<?= $celengan_id ?>&page=<?= $page - 1 ?>" style="margin-right: 5px; text-decoration:none; color:#007bff;">&laquo; Sebelumnya</a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>"
+                                style="padding:5px 10px; border-radius:5px; text-decoration:none;
+                <?= $i == $page ? 'background:#007bff; color:white;' : 'background:#f0f0f0; color:black;' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($page < $total_pages): ?>
+                            <a href="?id=<?= $celengan_id ?>&page=<?= $page + 1 ?>" style="margin-left: 5px; text-decoration:none; color:#007bff;">Selanjutnya &raquo;</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
             </table>
         <?php endif; ?>
 
