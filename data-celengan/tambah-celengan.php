@@ -53,7 +53,7 @@ if (!isset($_SESSION['user_id'])) {
         <?php endif; ?>
 
         <form action="api/api-tambah-celengan.php" method="POST">
-            <input type="text" name="nama_celengan" placeholder="Nama Celengan" required><br>
+            <input type="text" name="nama_celengan" placeholder="Nama Celengan" required autocomplete="off"><br>
             <input type="number" name="target" placeholder="Target Uang" min="1" required><br>
             <button type="submit">Simpan</button>
         </form>
