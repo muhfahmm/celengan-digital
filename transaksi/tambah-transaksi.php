@@ -69,7 +69,7 @@ if (!$celengan) {
             </select>
 
             <label>Keterangan</label>
-            <input type="text" name="keterangan">
+            <input type="text" name="keterangan" autocomplete="off">
 
             <button type="submit">Simpan</button>
         </form>
