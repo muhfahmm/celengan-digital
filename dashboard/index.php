@@ -37,10 +37,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #007bff;
         }
 
-        a:hover {
-            text-decoration: underline;
-        }
-
         .container {
             width: 90%;
             max-width: 900px;
@@ -190,30 +186,31 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="celengan-title">
                             <?= $no++ . '. ' . htmlspecialchars($c['nama_celengan']); ?>
                         </div>
+                        <table>
+                            <tr>
+                                <th>Total tabungan</th>
+                                <th>Target</th>
+                                <th>Progress</th>
+                                <th>Aksi</th>
+                            </tr>
+                            <tr>
+                                <td>Rp<?php echo number_format($c['total'], 0, ',', '.'); ?></td>
+                                <td>Rp<?php echo number_format($c['target'], 0, ',', '.'); ?></td>
+                                <td>
+                                    <?php echo $progress . '%'; ?>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: <?php echo $progress; ?>%;"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="../data-celengan/edit-celengan.php?id=<?php echo $c['id']; ?>">Edit</a> |
+                                    <a href="../data-celengan/hapus-celengan.php?id=<?php echo $c['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a>
+                                </td>
+                            </tr>
+                        </table>
                     </a>
 
-                    <table>
-                        <tr>
-                            <th>Total tabungan</th>
-                            <th>Target</th>
-                            <th>Progress</th>
-                            <th>Aksi</th>
-                        </tr>
-                        <tr>
-                            <td>Rp<?php echo number_format($c['total'], 0, ',', '.'); ?></td>
-                            <td>Rp<?php echo number_format($c['target'], 0, ',', '.'); ?></td>
-                            <td>
-                                <?php echo $progress . '%'; ?>
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: <?php echo $progress; ?>%;"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <a href="../data-celengan/edit-celengan.php?id=<?php echo $c['id']; ?>">Edit</a> |
-                                <a href="../data-celengan/hapus-celengan.php?id=<?php echo $c['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a>
-                            </td>
-                        </tr>
-                    </table>
+
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
