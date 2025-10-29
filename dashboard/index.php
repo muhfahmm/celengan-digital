@@ -13,158 +13,161 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Dashboard Celengan</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/main.js" defer></script>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f2f5;
-        margin: 0;
-        padding: 0;
-    }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
 
-    h2 {
-        text-align: center;
-        margin-top: 20px;
-        color: #333;
-    }
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
 
-    a {
-        text-decoration: none;
-        color: #007bff;
-    }
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
 
-    a:hover {
-        text-decoration: underline;
-    }
+        a:hover {
+            text-decoration: underline;
+        }
 
-    .container {
-        width: 90%;
-        max-width: 900px;
-        margin: 30px auto;
-        background: #fff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h3 {
-        margin-bottom: 15px;
-        color: #222;
-    }
-
-    .btn {
-        display: inline-block;
-        background-color: #007bff;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 6px;
-        font-size: 14px;
-        margin-bottom: 20px;
-        transition: background 0.3s;
-    }
-
-    .btn:hover {
-        background-color: #0056b3;
-    }
-
-    .celengan-card {
-        margin-bottom: 25px;
-        padding: 20px;
-        border-radius: 10px;
-        background-color: #fafafa;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .celengan-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-    }
-
-    .celengan-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 10px;
-    }
-
-    th {
-        background-color: #007bff;
-        color: white;
-        text-align: left;
-        padding: 10px;
-        font-size: 14px;
-    }
-
-    td {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-        font-size: 14px;
-    }
-
-    .progress-bar {
-        background-color: #eee;
-        border-radius: 10px;
-        overflow: hidden;
-        height: 10px;
-        width: 100%;
-        margin-top: 5px;
-    }
-
-    .progress {
-        background: linear-gradient(90deg, #4CAF50, #81C784);
-        height: 10px;
-        transition: width 0.4s ease;
-    }
-
-    .empty-message {
-        text-align: center;
-        margin-top: 40px;
-        color: #666;
-        font-size: 16px;
-    }
-
-    /* Tombol aksi */
-    td a {
-        color: #007bff;
-        font-weight: 500;
-        transition: color 0.3s;
-    }
-
-    td a:hover {
-        color: #0056b3;
-    }
-
-    /* Responsif */
-    @media (max-width: 600px) {
         .container {
-            width: 95%;
-            padding: 15px;
+            width: 90%;
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        table, th, td {
-            font-size: 12px;
-        }
-
-        .celengan-title {
-            font-size: 16px;
+        h3 {
+            margin-bottom: 15px;
+            color: #222;
         }
 
         .btn {
-            font-size: 12px;
-            padding: 8px 10px;
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: background 0.3s;
         }
-    }
-</style>
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .celengan-card {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .celengan-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .celengan-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 10px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .progress {
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            height: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .empty-message {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Tombol aksi */
+        td a {
+            color: #007bff;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        td a:hover {
+            color: #0056b3;
+        }
+
+        /* Responsif */
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            table,
+            th,
+            td {
+                font-size: 12px;
+            }
+
+            .celengan-title {
+                font-size: 16px;
+            }
+
+            .btn {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+        }
+    </style>
 
 </head>
 
@@ -221,4 +224,5 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </div>
 </body>
+
 </html>
