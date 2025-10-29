@@ -67,6 +67,25 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #0056b3;
         }
 
+        .logout-btn {
+            display: inline-block;
+            background-color: #ff4d4d;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px 20px;
+        }
+
+        .logout-btn:hover {
+            background-color: #e63939;
+            box-shadow: 0 3px 10px rgba(230, 57, 57, 0.3);
+        }
+
+
         .celengan-card {
             margin-bottom: 25px;
             padding: 20px;
@@ -169,11 +188,82 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <h2>Selamat datang, <?php echo $_SESSION['username']; ?></h2>
-    <a href="../auth/logout.php">Logout</a>
 
     <div class="container">
         <h3>Daftar Celengan</h3>
         <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
+        <a href="../auth/logout.php" class="logout-btn">Logout</a>
+
+        <?php
+        // ambil total keseluruhan tabungan dan target
+        $sumStmt = $pdo->prepare("SELECT SUM(total) AS total_tabungan, SUM(target) AS total_target FROM celengan WHERE user_id = ?");
+        $sumStmt->execute([$user_id]);
+        $sum = $sumStmt->fetch(PDO::FETCH_ASSOC);
+        $total_tabungan = $sum['total_tabungan'] ?? 0;
+        $total_target = $sum['total_target'] ?? 0;
+        ?>
+
+        <!-- Indikator ringkasan -->
+        <div style="
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    ">
+            <div style="text-align: center;">
+                <div style="font-size: 14px; color: #666;">Jumlah Total Tabungan</div>
+                <div style="font-size: 18px; font-weight: bold; color: #28a745;">
+                    Rp<?= number_format($total_tabungan, 0, ',', '.'); ?>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 14px; color: #666;">Jumlah Target</div>
+                <div style="font-size: 18px; font-weight: bold; color: #007bff;">
+                    Rp<?= number_format($total_target, 0, ',', '.'); ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol urutkan -->
+        <div style="margin-bottom: 15px;">
+            <strong>Urutkan berdasarkan:</strong><br>
+            <a href="?sort=awal" class="btn">Pertama dibuat</a>
+            <a href="?sort=akhir" class="btn">Paling akhir dibuat</a>
+            <a href="?sort=progress" class="btn">Progress</a>
+            <a href="?sort=target" class="btn">Target terbesar</a>
+            <a href="?sort=total" class="btn">Total tabungan terbanyak</a>
+        </div>
+
+        <?php
+        // logika pengurutan
+        $sort = isset($_GET['sort']) ? $_GET['sort'] : 'awal';
+
+        switch ($sort) {
+            case 'akhir':
+                $stmt = $pdo->prepare("SELECT * FROM celengan WHERE user_id = ? ORDER BY created_at DESC");
+                break;
+            case 'progress':
+                $stmt = $pdo->prepare("SELECT *, (total/target) AS progress_value FROM celengan WHERE user_id = ? ORDER BY progress_value DESC");
+                break;
+            case 'target':
+                $stmt = $pdo->prepare("SELECT * FROM celengan WHERE user_id = ? ORDER BY target DESC");
+                break;
+            case 'total':
+                $stmt = $pdo->prepare("SELECT * FROM celengan WHERE user_id = ? ORDER BY total DESC");
+                break;
+            default:
+                $stmt = $pdo->prepare("SELECT * FROM celengan WHERE user_id = ? ORDER BY created_at ASC");
+                break;
+        }
+
+        $stmt->execute([$user_id]);
+        $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ?>
 
         <?php if (count($celengan) > 0): ?>
             <?php
@@ -209,8 +299,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </tr>
                         </table>
                     </a>
-
-
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
@@ -220,6 +308,8 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php endif; ?>
     </div>
+
+
 </body>
 
 </html>
