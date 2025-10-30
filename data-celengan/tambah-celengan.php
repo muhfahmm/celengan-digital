@@ -21,11 +21,13 @@ if (!isset($_SESSION['user_id'])) {
             border: 1px solid #ddd;
             text-align: center;
         }
+
         input {
             width: 90%;
             margin-bottom: 10px;
             padding: 8px;
         }
+
         button {
             padding: 8px 15px;
             background: #4CAF50;
@@ -34,9 +36,11 @@ if (!isset($_SESSION['user_id'])) {
             border-radius: 5px;
             cursor: pointer;
         }
+
         button:hover {
             background: #45a049;
         }
+
         .error {
             color: red;
             margin-bottom: 10px;
