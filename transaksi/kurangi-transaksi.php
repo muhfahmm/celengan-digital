@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Kurangi Progress Celengan</title>
@@ -55,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 30px;
             background-color: #f5f5f5;
         }
+
         .container {
             max-width: 450px;
             margin: 0 auto;
@@ -63,47 +65,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px;
             box-shadow: 0 0 5px #ccc;
         }
-        input, textarea, button {
+
+        input,
+        textarea,
+        button {
             width: 100%;
             margin-top: 10px;
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #ccc;
         }
+
         button {
             background-color: #d9534f;
             color: white;
             cursor: pointer;
             border: none;
         }
+
         button:hover {
             background-color: #c9302c;
         }
+
         .error {
             color: red;
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <h3>Kurangi Progress - <?= htmlspecialchars($celengan['nama_celengan']); ?></h3>
+    <div class="container">
+        <h3>Kurangi Progress - <?= htmlspecialchars($celengan['nama_celengan']); ?></h3>
 
-    <?php if (isset($error)): ?>
-        <p class="error"><?= $error; ?></p>
-    <?php endif; ?>
+        <?php if (isset($error)): ?>
+            <p class="error"><?= $error; ?></p>
+        <?php endif; ?>
 
-    <form method="POST">
-        <label>Nominal (Rp)</label>
-        <input type="number" name="nominal" required>
+        <form method="POST">
+            <label>Nominal (Rp)</label>
+            <input type="number" name="nominal" required>
 
-        <label>keterangan</label>
-        <textarea name="keterangan" rows="3" placeholder="Contoh: pengeluaran harian"></textarea>
+            <label>keterangan</label>
+            <textarea name="keterangan" rows="3" placeholder="Contoh: pengeluaran harian"></textarea>
 
-        <button type="submit">Kurangi</button>
-    </form>
+            <button type="submit">Kurangi</button>
+        </form>
 
-    <br>
-    <a href="../dashboard/detail-celengan.php?id=<?= $celengan_id; ?>">Kembali</a>
-</div>
+        <br>
+        <a href="../dashboard/detail-celengan.php?id=<?= $celengan_id; ?>">Kembali</a>
+    </div>
 </body>
+
 </html>
