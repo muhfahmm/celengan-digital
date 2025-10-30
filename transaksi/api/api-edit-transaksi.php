@@ -44,4 +44,3 @@ if ($old) {
     header("Location: ../../dashboard/detail-celengan.php?id=" . $old['celengan_id']);
     exit;
 }
-?>
