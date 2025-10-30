@@ -26,4 +26,3 @@ if ($tipe == 'masuk') {
 // Redirect ke halaman detail celengan dengan id yang sama
 header("Location: ../../dashboard/detail-celengan.php?id=" . $celengan_id);
 exit;
-?>
