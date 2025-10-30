@@ -8,8 +8,8 @@ include('../config/db.php');
 
 $id = $_GET['id'];
 $stmt = $pdo->prepare("SELECT t.*, c.nama_celengan 
-  FROM transaksi t JOIN celengan c ON t.celengan_id = c.id 
-  WHERE t.id = ?");
+    FROM transaksi t JOIN celengan c ON t.celengan_id = c.id 
+    WHERE t.id = ?");
 $stmt->execute([$id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
