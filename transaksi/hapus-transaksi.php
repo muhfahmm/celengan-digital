@@ -34,4 +34,3 @@ if ($data) {
 } else {
     die("Data transaksi tidak ditemukan");
 }
-?>
