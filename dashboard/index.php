@@ -308,8 +308,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         <?php endif; ?>
     </div>
-
-
 </body>
 
 </html>
