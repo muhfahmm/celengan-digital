@@ -240,7 +240,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <?php
-        // logika pengurutan
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'awal';
 
         switch ($sort) {
