@@ -62,7 +62,7 @@ foreach ($transaksi as $t) {
         $colors[] = 'rgba(244, 67, 54, 0.8)'; // merah turun
     }
 
-    $saldo_akhir[] = $total; // posisi setelah transaksi
+    $saldo_akhir[] = $total;
 }
 
 // --- Pagination setup ---
