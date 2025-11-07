@@ -437,8 +437,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             }
 
             initChart();
-
-            // Event untuk tombol filter
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
