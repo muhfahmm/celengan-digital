@@ -195,7 +195,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="../auth/logout.php" class="logout-btn">Logout</a>
 
         <?php
-        // ambil total keseluruhan tabungan dan target
         $sumStmt = $pdo->prepare("SELECT SUM(total) AS total_tabungan, SUM(target) AS total_target FROM celengan WHERE user_id = ?");
         $sumStmt->execute([$user_id]);
         $sum = $sumStmt->fetch(PDO::FETCH_ASSOC);
@@ -203,7 +202,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $total_target = $sum['total_target'] ?? 0;
         ?>
 
-        <!-- Indikator ringkasan -->
         <div style="
         background-color: #f8f9fa;
         padding: 15px;
