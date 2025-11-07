@@ -229,7 +229,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Tombol urutkan -->
         <div style="margin-bottom: 15px;">
             <strong>Urutkan berdasarkan:</strong><br>
             <a href="?sort=awal" class="btn">Pertama dibuat</a>
