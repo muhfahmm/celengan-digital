@@ -51,7 +51,7 @@ $colors = [];
 
 foreach ($transaksi as $t) {
     $labels[] = $t['tanggal'];
-    $saldo_awal[] = $total; // posisi sebelum transaksi
+    $saldo_awal[] = $total;
 
     $nominal = (float)$t['nominal'];
     if (strtolower($t['tipe']) == 'masuk') {
