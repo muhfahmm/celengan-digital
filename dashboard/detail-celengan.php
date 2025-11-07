@@ -146,8 +146,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             margin-top: 15px;
         }
 
-        th,
-        td {
+        th, td {
             border-bottom: 1px solid #ddd;
             padding: 8px;
             text-align: left;
