@@ -447,7 +447,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 });
             });
 
-            // Set default aktif di "ALL"
             document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
         </script>
     </div>
