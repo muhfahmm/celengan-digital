@@ -22,7 +22,7 @@ if (!isset($_SESSION['user_id'])) {
             text-align: center;
         }
 
-        input {
+        input, select {
             width: 90%;
             margin-bottom: 10px;
             padding: 8px;
@@ -59,6 +59,14 @@ if (!isset($_SESSION['user_id'])) {
         <form action="api/api-tambah-celengan.php" method="POST">
             <input type="text" name="nama_celengan" placeholder="Nama Celengan" required autocomplete="off"><br>
             <input type="number" name="target" placeholder="Target Uang" min="1" required><br>
+
+            <!-- Tambahan: pilihan pengisian -->
+            <select name="pengisian" required>
+                <option value="harian">Harian</option>
+                <option value="mingguan">Mingguan</option>
+                <option value="bulanan">Bulanan</option>
+            </select><br>
+
             <button type="submit">Simpan</button>
         </form>
         <a href="../dashboard/index.php">Kembali</a>
