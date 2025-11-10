@@ -146,7 +146,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             margin-top: 15px;
         }
 
-        th, td {
+        th,
+        td {
             border-bottom: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -329,47 +330,92 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             const ctx = document.getElementById('chartTransaksi').getContext('2d');
             let chart;
 
+            function toDate(dateStr) {
+                const [year, month, day] = dateStr.split('-').map(Number);
+                return new Date(year, month - 1, day);
+            }
+
+            function getSaldoSebelumTanggal(targetDate) {
+                let saldo = 0;
+                for (let i = 0; i < rawLabels.length; i++) {
+                    if (toDate(rawLabels[i]) < targetDate) saldo = rawSaldoAkhir[i];
+                    else break;
+                }
+                return saldo;
+            }
+
             function filterData(range) {
                 const now = new Date();
                 const filteredLabels = [];
-                const filteredData = [];
+                const filteredAwal = [];
+                const filteredAkhir = [];
                 const filteredColors = [];
 
+                let startDate;
+                switch (range) {
+                    case '1D':
+                        startDate = new Date(now - 1 * 24 * 60 * 60 * 1000);
+                        break;
+                    case '1W':
+                        startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case '1M':
+                        startDate = new Date(now.setMonth(now.getMonth() - 1));
+                        break;
+                    case '3M':
+                        startDate = new Date(now.setMonth(now.getMonth() - 3));
+                        break;
+                    case '1Y':
+                        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+                        break;
+                    case 'ALL':
+                        startDate = new Date(0);
+                        break;
+                }
+
+                const saldoAwalPeriode = getSaldoSebelumTanggal(startDate);
+                let currentSaldo = saldoAwalPeriode;
+
                 for (let i = 0; i < rawLabels.length; i++) {
-                    const tgl = new Date(rawLabels[i]);
-                    let include = false;
-
-                    switch (range) {
-                        case '1D':
-                            include = (now - tgl) / (1000 * 60 * 60 * 24) <= 1;
-                            break;
-                        case '1W':
-                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 7) <= 1;
-                            break;
-                        case '1M':
-                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 30) <= 1;
-                            break;
-                        case '3M':
-                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 90) <= 1;
-                            break;
-                        case '1Y':
-                            include = (now - tgl) / (1000 * 60 * 60 * 24 * 365) <= 1;
-                            break;
-                        case 'ALL':
-                            include = true;
-                            break;
-                    }
-
-                    if (include) {
+                    const tgl = toDate(rawLabels[i]);
+                    if (tgl >= startDate) {
                         filteredLabels.push(rawLabels[i]);
-                        filteredData.push([rawSaldoAwal[i], rawSaldoAkhir[i]]);
+                        filteredAwal.push(currentSaldo);
+
+                        const diff = rawSaldoAkhir[i] - rawSaldoAwal[i];
+                        currentSaldo += diff;
+
+                        filteredAkhir.push(currentSaldo);
                         filteredColors.push(rawColors[i]);
                     }
                 }
 
+                if (filteredLabels.length === 0) {
+                    filteredLabels.push('Tidak ada transaksi');
+                    filteredAwal.push(saldoAwalPeriode);
+                    filteredAkhir.push(saldoAwalPeriode);
+                    filteredColors.push('rgba(180,180,180,0.5)');
+                }
+
+                // cari batas bawah & atas untuk skala Y (tidak dari 0)
+                const minY = Math.min(...filteredAwal, ...filteredAkhir);
+                const maxY = Math.max(...filteredAwal, ...filteredAkhir);
+
                 chart.data.labels = filteredLabels;
-                chart.data.datasets[0].data = filteredData;
+                chart.data.datasets[0].data = filteredAwal.map((v, i) => [v, filteredAkhir[i]]);
                 chart.data.datasets[0].backgroundColor = filteredColors;
+                chart.data.datasets[0].borderColor = filteredColors;
+
+                // ubah range Y-axis berdasarkan range
+                if (range === 'ALL') {
+                    chart.options.scales.y.beginAtZero = true;
+                    chart.options.scales.y.min = 0;
+                } else {
+                    chart.options.scales.y.beginAtZero = false;
+                    chart.options.scales.y.min = minY - (maxY - minY) * 0.1; // sedikit ruang bawah
+                }
+                chart.options.scales.y.max = maxY + (maxY - minY) * 0.1; // sedikit ruang atas
+
                 chart.update();
             }
 
@@ -435,7 +481,18 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 });
             }
 
+            function autoRefreshDaily() {
+                const lastRefresh = localStorage.getItem('lastRefresh');
+                const now = new Date().toDateString();
+                if (lastRefresh !== now) {
+                    localStorage.setItem('lastRefresh', now);
+                    location.reload();
+                }
+            }
+
             initChart();
+            autoRefreshDaily();
+
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -446,6 +503,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
             document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
         </script>
+
     </div>
 
 </body>
