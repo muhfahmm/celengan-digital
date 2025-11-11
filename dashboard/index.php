@@ -200,16 +200,7 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         ?>
 
         <div style="
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        margin-top: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    ">
+        background-color: #f8f9fa; padding: 15px; border-radius: 8px; display: flex; justify-content: space-around; align-items: center; margin-top: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
             <div style="text-align: center;">
                 <div style="font-size: 14px; color: #666;">Jumlah Total Tabungan</div>
                 <div style="font-size: 18px; font-weight: bold; color: #28a745;">
