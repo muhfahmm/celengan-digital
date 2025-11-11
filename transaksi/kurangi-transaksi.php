@@ -52,43 +52,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Kurangi Progress Celengan</title>
     <style>
         body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f2f5;
             font-family: Arial, sans-serif;
-            margin: 30px;
-            background-color: #f5f5f5;
         }
 
         .container {
-            max-width: 450px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 5px #ccc;
+            width: 400px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
         }
 
         input,
-        textarea,
-        button {
+        textarea {
             width: 100%;
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #d9534f;
+            outline: none;
         }
 
         button {
-            background-color: #d9534f;
+            width: 100%;
+            padding: 10px;
+            background: #d9534f;
             color: white;
-            cursor: pointer;
             border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
         button:hover {
-            background-color: #c9302c;
+            background: #c9302c;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #d9534f;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         .error {
-            color: red;
+            color: #c9302c;
+            background: #f9d6d5;
+            border: 1px solid #f1b0b7;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 12px;
+            text-align: center;
         }
     </style>
 </head>
@@ -103,15 +151,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST">
             <label>Nominal (Rp)</label>
-            <input type="number" name="nominal" required>
+            <input type="number" name="nominal" min="1" required>
 
-            <label>keterangan</label>
+            <label>Keterangan</label>
             <textarea name="keterangan" rows="3" placeholder="Contoh: pengeluaran harian"></textarea>
 
             <button type="submit">Kurangi</button>
         </form>
 
-        <br>
         <a href="../dashboard/detail-celengan.php?id=<?= $celengan_id; ?>">Kembali</a>
     </div>
 </body>
