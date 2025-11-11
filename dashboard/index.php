@@ -187,7 +187,7 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <div class="container">
-        <h2>Selamat datang, <?php echo $_SESSION['username']; ?></h2>
+        <h2>Celengan <?php echo $_SESSION['username']; ?></h2>
         <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
         <a href="../auth/logout.php" class="logout-btn">Logout</a>
 
