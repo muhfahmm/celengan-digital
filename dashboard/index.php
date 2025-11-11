@@ -27,7 +27,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         h2 {
-            text-align: center;
             margin-top: 20px;
             color: #333;
         }
