@@ -20,7 +20,7 @@ $data = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($data) {
     $celengan_id = $data['celengan_id'];
 
-    // Update total celengan (balikkan pengaruh transaksi yang dihapus)
+    // Update total celengan
     $update = $data['tipe'] == 'masuk' ? -$data['nominal'] : $data['nominal'];
     $pdo->prepare("UPDATE celengan SET total = total + ? WHERE id = ?")
         ->execute([$update, $celengan_id]);
