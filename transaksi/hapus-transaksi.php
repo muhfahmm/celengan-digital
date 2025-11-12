@@ -4,6 +4,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit;
 }
+
 require '../config/db.php';
 
 if (!isset($_GET['id'])) {
