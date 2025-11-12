@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit;
 }
-include('../config/db.php');
+require '../config/db.php';
 
 // Ambil ID celengan dari URL
 if (!isset($_GET['celengan_id'])) {
