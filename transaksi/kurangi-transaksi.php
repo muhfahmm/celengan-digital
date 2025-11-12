@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include('../config/db.php');
+require '../config/db.php';
 
 $celengan_id = $_GET['celengan_id'] ?? null;
 
