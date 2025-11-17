@@ -144,7 +144,8 @@ if (!$celengan) {
             <button type="submit">Simpan</button>
         </form>
 
-        <a href="../dashboard/index.php">Kembali</a>
+        <a href="../dashboard/detail-celengan.php?id=<?= $celengan_id; ?>">Kembali</a>
+
     </div>
 </body>
 
