@@ -322,187 +322,208 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             </style>
         </div>
         <script>
-            const rawLabels = <?= json_encode($labels); ?>;
-            const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
-            const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
-            const rawColors = <?= json_encode($colors); ?>;
+    // ==== RAW DATA ====
+    const rawLabels = <?= json_encode($labels); ?>;
+    const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
+    const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
+    const rawColors = <?= json_encode($colors); ?>;
 
-            const ctx = document.getElementById('chartTransaksi').getContext('2d');
-            let chart;
+    const ctx = document.getElementById('chartTransaksi').getContext('2d');
+    let chart;
 
-            function toDate(dateStr) {
-                const [year, month, day] = dateStr.split('-').map(Number);
-                return new Date(year, month - 1, day);
+    // ==== HELPER: Convert yyyy-mm-dd to Date ====
+    function toDate(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
+
+    // ==== HELPER: Ambil saldo sebelum tanggal tertentu ====
+    function getSaldoSebelumTanggal(targetDate) {
+        let saldo = 0;
+        for (let i = 0; i < rawLabels.length; i++) {
+            if (toDate(rawLabels[i]) < targetDate) {
+                saldo = rawSaldoAkhir[i];
+            } else break;
+        }
+        return saldo;
+    }
+
+    // ==== MERGE TRANSAKSI PER TANGGAL ====
+    function mergeByDate(labels, awal, akhir, colors) {
+        const map = {};
+
+        labels.forEach((tgl, i) => {
+            const diff = akhir[i] - awal[i];
+            if (!map[tgl]) {
+                map[tgl] = { startSaldo: awal[i], totalDiff: 0, color: colors[i] };
             }
+            map[tgl].totalDiff += diff;
+        });
 
-            function getSaldoSebelumTanggal(targetDate) {
-                let saldo = 0;
-                for (let i = 0; i < rawLabels.length; i++) {
-                    if (toDate(rawLabels[i]) < targetDate) saldo = rawSaldoAkhir[i];
-                    else break;
-                }
-                return saldo;
+        const mergedLabels = [];
+        const mergedAwal = [];
+        const mergedAkhir = [];
+        const mergedColors = [];
+
+        Object.keys(map).forEach(tgl => {
+            mergedLabels.push(tgl);
+            mergedAwal.push(map[tgl].startSaldo);
+            mergedAkhir.push(map[tgl].startSaldo + map[tgl].totalDiff);
+            mergedColors.push(map[tgl].color);
+        });
+
+        return { labels: mergedLabels, awal: mergedAwal, akhir: mergedAkhir, colors: mergedColors };
+    }
+
+    // ==== FILTER DATA ====
+    function filterData(range) {
+        const now = new Date();
+        let startDate;
+
+        switch (range) {
+            case '1D': startDate = new Date(now - 1 * 24 * 60 * 60 * 1000); break;
+            case '1W': startDate = new Date(now - 7 * 24 * 60 * 60 * 1000); break;
+            case '1M': startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
+            case '3M': startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()); break;
+            case '1Y': startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()); break;
+            case 'ALL': startDate = new Date(0); break;
+        }
+
+        const saldoAwal = getSaldoSebelumTanggal(startDate);
+        let currentSaldo = saldoAwal;
+
+        const labels = [];
+        const awal = [];
+        const akhir = [];
+        const colors = [];
+
+        for (let i = 0; i < rawLabels.length; i++) {
+            const tgl = toDate(rawLabels[i]);
+            if (tgl >= startDate) {
+                labels.push(rawLabels[i]);
+                awal.push(currentSaldo);
+
+                const diff = rawSaldoAkhir[i] - rawSaldoAwal[i];
+                currentSaldo += diff;
+
+                akhir.push(currentSaldo);
+                colors.push(rawColors[i]);
             }
+        }
 
-            function filterData(range) {
-                const now = new Date();
-                const filteredLabels = [];
-                const filteredAwal = [];
-                const filteredAkhir = [];
-                const filteredColors = [];
+        // Jika tidak ada transaksi
+        if (labels.length === 0) {
+            labels.push("Tidak ada transaksi");
+            awal.push(saldoAwal);
+            akhir.push(saldoAwal);
+            colors.push("rgba(180,180,180,0.5)");
+        }
 
-                let startDate;
-                switch (range) {
-                    case '1D':
-                        startDate = new Date(now - 1 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '1W':
-                        startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
-                        break;
-                    case '1M':
-                        startDate = new Date(now.setMonth(now.getMonth() - 1));
-                        break;
-                    case '3M':
-                        startDate = new Date(now.setMonth(now.getMonth() - 3));
-                        break;
-                    case '1Y':
-                        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-                        break;
-                    case 'ALL':
-                        startDate = new Date(0);
-                        break;
-                }
+        // ==== APPLY MERGE ====
+        let data;
+        if (range === '1D' || range === '1W') {
+            // Tidak merge
+            data = { labels, awal, akhir, colors };
+        } else {
+            // Merge termasuk ALL
+            data = mergeByDate(labels, awal, akhir, colors);
+        }
 
-                const saldoAwalPeriode = getSaldoSebelumTanggal(startDate);
-                let currentSaldo = saldoAwalPeriode;
+        // ==== UPDATE CHART ====
+        chart.data.labels = data.labels;
+        chart.data.datasets[0].data = data.awal.map((v, i) => [v, data.akhir[i]]);
+        chart.data.datasets[0].backgroundColor = data.colors;
+        chart.data.datasets[0].borderColor = data.colors;
 
-                for (let i = 0; i < rawLabels.length; i++) {
-                    const tgl = toDate(rawLabels[i]);
-                    if (tgl >= startDate) {
-                        filteredLabels.push(rawLabels[i]);
-                        filteredAwal.push(currentSaldo);
+        const allVals = [...data.awal, ...data.akhir];
+        const minY = Math.min(...allVals);
+        const maxY = Math.max(...allVals);
 
-                        const diff = rawSaldoAkhir[i] - rawSaldoAwal[i];
-                        currentSaldo += diff;
+        if (range === 'ALL') {
+            chart.options.scales.y.beginAtZero = true;
+            chart.options.scales.y.min = 0;
+        } else {
+            chart.options.scales.y.beginAtZero = false;
+            chart.options.scales.y.min = minY - (maxY - minY) * 0.1;
+        }
+        chart.options.scales.y.max = maxY + (maxY - minY) * 0.1;
 
-                        filteredAkhir.push(currentSaldo);
-                        filteredColors.push(rawColors[i]);
-                    }
-                }
+        chart.update();
+    }
 
-                if (filteredLabels.length === 0) {
-                    filteredLabels.push('Tidak ada transaksi');
-                    filteredAwal.push(saldoAwalPeriode);
-                    filteredAkhir.push(saldoAwalPeriode);
-                    filteredColors.push('rgba(180,180,180,0.5)');
-                }
-
-                // cari batas bawah & atas untuk skala Y (tidak dari 0)
-                const minY = Math.min(...filteredAwal, ...filteredAkhir);
-                const maxY = Math.max(...filteredAwal, ...filteredAkhir);
-
-                chart.data.labels = filteredLabels;
-                chart.data.datasets[0].data = filteredAwal.map((v, i) => [v, filteredAkhir[i]]);
-                chart.data.datasets[0].backgroundColor = filteredColors;
-                chart.data.datasets[0].borderColor = filteredColors;
-
-                // ubah range Y-axis berdasarkan range
-                if (range === 'ALL') {
-                    chart.options.scales.y.beginAtZero = true;
-                    chart.options.scales.y.min = 0;
-                } else {
-                    chart.options.scales.y.beginAtZero = false;
-                    chart.options.scales.y.min = minY - (maxY - minY) * 0.1; // sedikit ruang bawah
-                }
-                chart.options.scales.y.max = maxY + (maxY - minY) * 0.1; // sedikit ruang atas
-
-                chart.update();
-            }
-
-            function initChart() {
-                chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: rawLabels,
-                        datasets: [{
-                            label: 'Perubahan Saldo',
-                            data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
-                            backgroundColor: rawColors,
-                            borderColor: rawColors,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    display: false
-                                },
-                                border: {
-                                    display: false
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return 'Rp' + value.toLocaleString('id-ID');
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(220,220,220,0.3)'
-                                }
-                            }
+    // ==== INIT CHART ====
+    function initChart() {
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: rawLabels,
+                datasets: [{
+                    label: 'Perubahan Saldo',
+                    data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
+                    backgroundColor: rawColors,
+                    borderColor: rawColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { grid: { display: false }, ticks: { display: false }, border: { display: false } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: v => "Rp" + v.toLocaleString("id-ID")
                         },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const start = context.raw[0];
-                                        const end = context.raw[1];
-                                        const diff = end - start;
-                                        return [
-                                            'Sebelum: Rp' + start.toLocaleString('id-ID'),
-                                            'Sesudah: Rp' + end.toLocaleString('id-ID'),
-                                            (diff >= 0 ? 'Naik: +' : 'Turun: ') + 'Rp' + Math.abs(diff).toLocaleString('id-ID')
-                                        ];
-                                    }
-                                }
+                        grid: { color: "rgba(220,220,220,0.3)" }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const s = ctx.raw[0];
+                                const e = ctx.raw[1];
+                                const diff = e - s;
+                                return [
+                                    "Sebelum: Rp" + s.toLocaleString("id-ID"),
+                                    "Sesudah: Rp" + e.toLocaleString("id-ID"),
+                                    (diff >= 0 ? "Naik: +" : "Turun: ") + "Rp" + Math.abs(diff).toLocaleString("id-ID")
+                                ];
                             }
                         }
                     }
-                });
-            }
-
-            function autoRefreshDaily() {
-                const lastRefresh = localStorage.getItem('lastRefresh');
-                const now = new Date().toDateString();
-                if (lastRefresh !== now) {
-                    localStorage.setItem('lastRefresh', now);
-                    location.reload();
                 }
             }
+        });
+    }
 
-            initChart();
-            autoRefreshDaily();
+    // ==== AUTO REFRESH SETIAP HARI ====
+    function autoRefreshDaily() {
+        const last = localStorage.getItem("lastRefresh");
+        const now = new Date().toDateString();
+        if (last !== now) {
+            localStorage.setItem("lastRefresh", now);
+            location.reload();
+        }
+    }
 
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    filterData(this.dataset.range);
-                });
-            });
+    // ==== RUN ====
+    initChart();
+    autoRefreshDaily();
 
-            document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
-        </script>
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterData(btn.dataset.range);
+        });
+    });
+
+    document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
+</script>
+
+
 
     </div>
 
