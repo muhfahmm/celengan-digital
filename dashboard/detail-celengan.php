@@ -563,7 +563,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
         </script>
 
-
     </div>
 
 </body>
