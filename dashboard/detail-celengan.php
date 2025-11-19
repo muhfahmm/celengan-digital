@@ -266,24 +266,62 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($total_pages > 1): ?>
-                    <div style="margin-top: 15px; text-align: center;">
-                        <?php if ($page > 1): ?>
-                            <a href="?id=<?= $celengan_id ?>&page=<?= $page - 1 ?>" style="margin-right: 5px; text-decoration:none; color:#007bff;">&laquo; Sebelumnya</a>
-                        <?php endif; ?>
+    <div style="margin-top: 15px; text-align: center;">
 
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>"
-                                style="padding:5px 10px; border-radius:5px; text-decoration:none;
+        <?php
+        // Tentukan jumlah tombol maksimal
+        $max_buttons = 5;
+
+        // Hitung range tombol
+        $start = max(1, $page - 2);
+        $end   = min($total_pages, $start + $max_buttons - 1);
+
+        // Jika di akhir, geser range supaya tetap 5
+        if ($end - $start < $max_buttons - 1) {
+            $start = max(1, $end - $max_buttons + 1);
+        }
+
+        // Tombol sebelumnya
+        if ($page > 1): ?>
+            <a href="?id=<?= $celengan_id ?>&page=<?= $page - 1 ?>" style="margin-right: 5px; text-decoration:none; color:#007bff;">&laquo;</a>
+        <?php endif; ?>
+
+        <!-- Tombol halaman pertama + titik jika jauh -->
+        <?php if ($start > 1): ?>
+            <a href="?id=<?= $celengan_id ?>&page=1" style="padding:5px 10px; border-radius:5px; background:#f0f0f0; color:black; text-decoration:none;">1</a>
+            <?php if ($start > 2): ?>
+                <span style="margin:0 5px;">...</span>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <!-- Tombol utama (maksimal 5 tombol) -->
+        <?php for ($i = $start; $i <= $end; $i++): ?>
+            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>"
+                style="padding:5px 10px; border-radius:5px; margin:0 2px; text-decoration:none;
                 <?= $i == $page ? 'background:#007bff; color:white;' : 'background:#f0f0f0; color:black;' ?>">
-                                <?= $i ?>
-                            </a>
-                        <?php endfor; ?>
+                <?= $i ?>
+            </a>
+        <?php endfor; ?>
 
-                        <?php if ($page < $total_pages): ?>
-                            <a href="?id=<?= $celengan_id ?>&page=<?= $page + 1 ?>" style="margin-left: 5px; text-decoration:none; color:#007bff;">Selanjutnya &raquo;</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
+        <!-- Tombol terakhir + titik jika jauh -->
+        <?php if ($end < $total_pages): ?>
+            <?php if ($end < $total_pages - 1): ?>
+                <span style="margin:0 5px;">...</span>
+            <?php endif; ?>
+            <a href="?id=<?= $celengan_id ?>&page=<?= $total_pages ?>" 
+                style="padding:5px 10px; border-radius:5px; background:#f0f0f0; color:black; text-decoration:none;">
+                <?= $total_pages ?>
+            </a>
+        <?php endif; ?>
+
+        <!-- Tombol selanjutnya -->
+        <?php if ($page < $total_pages): ?>
+            <a href="?id=<?= $celengan_id ?>&page=<?= $page + 1 ?>" style="margin-left: 5px; text-decoration:none; color:#007bff;">&raquo;</a>
+        <?php endif; ?>
+
+    </div>
+<?php endif; ?>
+
 
             </table>
         <?php endif; ?>
