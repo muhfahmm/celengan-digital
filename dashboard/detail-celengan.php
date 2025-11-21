@@ -337,28 +337,28 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         <div style="text-align:center; margin-bottom:10px;">
             <button id="btnBatang" class="filter-btn active">Batang</button>
             <button id="btnGaris" class="filter-btn">Garis</button>
-                    <style>
-            .filter-btn {
-                background: #222;
-                color: #fff;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 4px;
-                margin: 0 4px;
-                cursor: pointer;
-                font-size: 13px;
-                transition: 0.2s;
-            }
+            <style>
+                .filter-btn {
+                    background: #222;
+                    color: #fff;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    margin: 0 4px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    transition: 0.2s;
+                }
 
-            .filter-btn:hover {
-                background: #007bff;
-            }
+                .filter-btn:hover {
+                    background: #007bff;
+                }
 
-            .filter-btn.active {
-                background: #007bff;
-                color: white;
-            }
-        </style>
+                .filter-btn.active {
+                    background: #007bff;
+                    color: white;
+                }
+            </style>
         </div>
 
         <!-- Filter Range Buttons -->
