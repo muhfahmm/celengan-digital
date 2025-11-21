@@ -320,7 +320,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
-
             </table>
         <?php endif; ?>
 
