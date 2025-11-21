@@ -347,7 +347,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             <button class="filter-btn-range" data-range="1Y">1Y</button>
             <button class="filter-btn-range" data-range="ALL">All</button>
             <style>
-                .filter-btn {
+                .filter-btn-range {
                     background: #222;
                     color: #fff;
                     border: none;
@@ -359,11 +359,11 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     transition: 0.2s;
                 }
 
-                .filter-btn:hover {
+                .filter-btn-range:hover {
                     background: #007bff;
                 }
 
-                .filter-btn.active {
+                .filter-btn-range.active {
                     background: #007bff;
                     color: white;
                 }
