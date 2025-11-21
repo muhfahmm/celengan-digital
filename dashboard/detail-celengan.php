@@ -392,9 +392,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             </style>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-
         <script>
             // ==== RAW DATA ====
             const rawLabels = <?= json_encode($labels); ?>;
@@ -710,7 +707,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             autoRefreshDaily();
         </script>
 
-
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     </div>
 
 </body>
