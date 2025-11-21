@@ -323,18 +323,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             </table>
         <?php endif; ?>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
         <div id="chartContainer">
             <h3>Grafik Pemasukan dan Pengeluaran</h3>
             <canvas id="chartTransaksi" height="100"></canvas>
-
-            <!-- RESET ZOOM BUTTON -->
-            <div style="text-align:center; margin-bottom:10px;">
-                <button onclick="chart.resetZoom()" class="filter-btn">Reset Zoom</button>
-            </div>
         </div>
-
         <div style="text-align:center; margin-bottom:15px;">
             <button class="filter-btn" data-range="1D">1D</button>
             <button class="filter-btn" data-range="1W">1W</button>
@@ -365,13 +357,12 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 }
             </style>
         </div>
-
         <script>
             // ==== RAW DATA ====
             const rawLabels = <?= json_encode($labels); ?>;
             const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
             const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
-            const rawColors = <?= json_encode($colors); ?>;
+            const rawColors = <?= json_encode($colors); ?>; // masih dipakai kalau mau
 
             const ctx = document.getElementById('chartTransaksi').getContext('2d');
             let chart;
@@ -395,14 +386,16 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
             // ==== HELPER: warna berdasarkan diff total ====
             function colorForDiff(diff) {
-                if (diff > 0) return '#41A67E';
-                if (diff < 0) return '#BF1A1A';
-                return 'rgba(180,180,180,0.6)';
+                if (diff > 0) return '#41A67E'; // hijau (naik)
+                if (diff < 0) return '#BF1A1A'; // merah (turun)
+                return 'rgba(180,180,180,0.6)'; // netral (nol)
             }
 
-            // ==== MERGE TRANSAKSI PER TANGGAL ====
+            // ==== MERGE TRANSAKSI PER TANGGAL (memilih warna berdasarkan totalDiff) ====
             function mergeByDate(labels, awal, akhir, colors) {
-                const map = Object.create(null);
+                const map = Object.create(null); // objek bersih
+
+                // labels di sini diasumsikan sudah berurut kronologis
                 labels.forEach((tgl, i) => {
                     const diff = akhir[i] - awal[i];
                     if (!map[tgl]) {
@@ -419,6 +412,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 const mergedAkhir = [];
                 const mergedColors = [];
 
+                // Object.keys akan mengembalikan insertion order sesuai traversal labels
                 Object.keys(map).forEach(tgl => {
                     const start = map[tgl].startSaldo;
                     const totalDiff = map[tgl].totalDiff;
@@ -443,10 +437,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
                 switch (range) {
                     case '1D':
-                        startDate = new Date(now.getTime() - 1 * 86400000);
+                        startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
                         break;
                     case '1W':
-                        startDate = new Date(now.getTime() - 7 * 86400000);
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                         break;
                     case '1M':
                         startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -486,6 +480,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     }
                 }
 
+                // Jika tidak ada transaksi
                 if (labels.length === 0) {
                     labels.push("Tidak ada transaksi");
                     awal.push(saldoAwal);
@@ -493,8 +488,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     colors.push("rgba(180,180,180,0.5)");
                 }
 
+                // ==== APPLY MERGE ====
                 let data;
                 if (range === '1D' || range === '1W') {
+                    // Tidak merge: gunakan warna asli tiap transaksi
                     data = {
                         labels,
                         awal,
@@ -502,9 +499,11 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         colors
                     };
                 } else {
+                    // Merge termasuk ALL: warna ditentukan oleh total diff per tanggal
                     data = mergeByDate(labels, awal, akhir, colors);
                 }
 
+                // ==== UPDATE CHART ====
                 chart.data.labels = data.labels;
                 chart.data.datasets[0].data = data.awal.map((v, i) => [v, data.akhir[i]]);
                 chart.data.datasets[0].backgroundColor = data.colors;
@@ -542,47 +541,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     },
                     options: {
                         responsive: true,
-
-                        // ====================================
-                        //        ZOOM & PAN DI TAMBAHKAN
-                        // ====================================
-                        plugins: {
-                            zoom: {
-                                zoom: {
-                                    wheel: {
-                                        enabled: true
-                                    },
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    mode: 'x', // zoom horizontal
-                                },
-                                pan: {
-                                    enabled: true,
-                                    mode: 'x', // geser horizontal
-                                }
-                            },
-
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: ctx => {
-                                        const s = ctx.raw[0];
-                                        const e = ctx.raw[1];
-                                        const diff = e - s;
-                                        return [
-                                            "Sebelum: Rp" + s.toLocaleString("id-ID"),
-                                            "Sesudah: Rp" + e.toLocaleString("id-ID"),
-                                            (diff >= 0 ? "Naik: +" : "Turun: ") +
-                                            "Rp" + Math.abs(diff).toLocaleString("id-ID")
-                                        ];
-                                    }
-                                }
-                            }
-                        },
-
                         scales: {
                             x: {
                                 grid: {
@@ -604,6 +562,25 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                                     color: "rgba(220,220,220,0.3)"
                                 }
                             }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const s = ctx.raw[0];
+                                        const e = ctx.raw[1];
+                                        const diff = e - s;
+                                        return [
+                                            "Sebelum: Rp" + s.toLocaleString("id-ID"),
+                                            "Sesudah: Rp" + e.toLocaleString("id-ID"),
+                                            (diff >= 0 ? "Naik: +" : "Turun: ") + "Rp" + Math.abs(diff).toLocaleString("id-ID")
+                                        ];
+                                    }
+                                }
+                            }
                         }
                     }
                 });
@@ -621,20 +598,19 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
             // ==== RUN ====
             initChart();
-            filterData('ALL');
+            filterData('ALL'); // tampil awal sebagai ALL (sudah di-merge & warna per net diff)
             autoRefreshDaily();
 
+            // set tombol active dan event listener
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     filterData(btn.dataset.range);
-                    chart.resetZoom(); // reset zoom saat filter berubah
                 });
             });
             document.querySelector('.filter-btn[data-range="ALL"]').classList.add('active');
         </script>
-
 
     </div>
 
