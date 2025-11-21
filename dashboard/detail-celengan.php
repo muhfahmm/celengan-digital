@@ -318,7 +318,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         <?php if ($page < $total_pages): ?>
                             <a href="?id=<?= $celengan_id ?>&page=<?= $page + 1 ?>" style="margin-left: 5px; text-decoration:none; color:#007bff;">&raquo;</a>
                         <?php endif; ?>
-
                     </div>
                 <?php endif; ?>
 
