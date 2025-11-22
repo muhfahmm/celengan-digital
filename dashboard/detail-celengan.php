@@ -354,6 +354,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     </style>
                 </div>
             </div>
+            
 <div id="chartInfo" style="
     display:none;
     width:100%;
