@@ -94,7 +94,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Celengan - <?= htmlspecialchars($celengan['nama_celengan']); ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -324,7 +324,37 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
 
         <div id="chartContainer">
-            <h3>Grafik Pemasukan dan Pengeluaran</h3>
+            <div style="display: flex;  justify-content:space-between;">
+                <h3 style="margin-top: 0;">Grafik Pemasukan dan Pengeluaran</h3>
+                <!-- Toggle Button Chart Type -->
+                <div class="chart-filter">
+                    <button id="btnBatang" class="filter-btn active"><i class="bi bi-bar-chart" style="font-size: 22px;"></i></button>
+                    <button id="btnGaris" class="filter-btn"><i class="bi bi-graph-up" style="font-size: 22px;"></i></button>
+                    <style>
+                        .filter-btn {
+                            background: #222;
+                            color: #fff;
+                            border: none;
+                            padding: 6px 12px;
+                            border-radius: 4px;
+                            margin: 0 4px;
+                            cursor: pointer;
+                            font-size: 13px;
+                            transition: 0.2s;
+                        }
+
+                        .filter-btn:hover {
+                            background: #007bff;
+                        }
+
+                        .filter-btn.active {
+                            background: #007bff;
+                            color: white;
+                        }
+                    </style>
+                </div>
+            </div>
+
             <canvas id="chartTransaksi" height="100"></canvas>
 
             <!-- RESET ZOOM BUTTON -->
@@ -333,42 +363,17 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Toggle Button Chart Type -->
-        <div style="text-align:center; margin-bottom:10px;">
-            <button id="btnBatang" class="filter-btn active">Batang</button>
-            <button id="btnGaris" class="filter-btn">Garis</button>
-            <style>
-                .filter-btn {
-                    background: #222;
-                    color: #fff;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    margin: 0 4px;
-                    cursor: pointer;
-                    font-size: 13px;
-                    transition: 0.2s;
-                }
-
-                .filter-btn:hover {
-                    background: #007bff;
-                }
-
-                .filter-btn.active {
-                    background: #007bff;
-                    color: white;
-                }
-            </style>
-        </div>
-
         <!-- Filter Range Buttons -->
         <div style="text-align:center; margin-bottom:15px;">
             <button class="filter-btn-range" data-range="1D">1D</button>
             <button class="filter-btn-range" data-range="1W">1W</button>
-            <button class="filter-btn-range" data-range="1M">3M</button>
+            <button class="filter-btn-range" data-range="1M">1M</button>
+            <button class="filter-btn-range" data-range="3M">3M</button>
             <button class="filter-btn-range" data-range="1Y">1Y</button>
             <button class="filter-btn-range" data-range="ALL">All</button>
-            <style>
+            <script>
+                // Tambahkan CSS ke halaman lewat JS
+                const css = `
                 .filter-btn-range {
                     background: #222;
                     color: #fff;
@@ -380,16 +385,70 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     font-size: 13px;
                     transition: 0.2s;
                 }
-
                 .filter-btn-range:hover {
                     background: #007bff;
                 }
-
                 .filter-btn-range.active {
                     background: #007bff;
                     color: white;
                 }
-            </style>
+            `;
+
+                const styleTag = document.createElement("style");
+                styleTag.innerHTML = css;
+                document.head.appendChild(styleTag);
+
+
+                // Range khusus chart batang (bar)
+                const rangeBar = ["1D", "1W", "1M", "2M", "3M", "ALL"];
+
+                // Range khusus chart garis (line)
+                const rangeLine = ["1D", "1W", "1M", "3M", "6M", "1Y", "ALL"];
+
+                // Container tombol filter range (cari dari tombol yang sudah ada)
+                const rangeBox = document.querySelector("div > .filter-btn-range")?.parentElement;
+
+                // Fungsi generate tombol range baru
+                function generateRangeButtons(chartType) {
+                    if (!rangeBox) return;
+
+                    rangeBox.innerHTML = ""; // hapus tombol lama
+
+                    const list = (chartType === "bar") ? rangeBar : rangeLine;
+
+                    list.forEach(range => {
+                        const btn = document.createElement("button");
+                        btn.className = "filter-btn-range";
+                        btn.dataset.range = range;
+                        btn.innerText = range;
+
+                        // event klik — tetap memakai handleRangeFilter milikmu
+                        btn.addEventListener("click", () => handleRangeFilter(range));
+
+                        // tandai aktif
+                        if (range === currentRange) {
+                            btn.classList.add("active");
+                        }
+
+                        rangeBox.appendChild(btn);
+                    });
+                }
+
+                // ==== Patch tombol tipe chart (TANPA mengubah fungsi aslimu) ====
+
+                // Batang
+                document.getElementById("btnBatang").addEventListener("click", () => {
+                    setTimeout(() => generateRangeButtons("bar"), 10);
+                });
+
+                // Garis
+                document.getElementById("btnGaris").addEventListener("click", () => {
+                    setTimeout(() => generateRangeButtons("line"), 10);
+                });
+
+                // ==== Saat page load, buat tombol sesuai tipe chart terakhir ====
+                setTimeout(() => generateRangeButtons(currentType), 50);
+            </script>
         </div>
 
         <script>
@@ -401,7 +460,14 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
             const ctx = document.getElementById('chartTransaksi').getContext('2d');
             let chart;
-            let currentType = 'bar'; // default
+
+            // ==== PERSISTENCE: Ambil tipe chart terakhir dari localStorage (jika ada) ====
+            // Ini harus diletakkan sebelum init sehingga handleRangeFilter('1W') yang asli tetap dipakai
+            let currentType = localStorage.getItem("chartTypeLastUsed") || 'bar';
+
+            // Set tombol active sesuai tipe yang terbaca (agar UI konsisten)
+            document.getElementById('btnBatang').classList.toggle('active', currentType === 'bar');
+            document.getElementById('btnGaris').classList.toggle('active', currentType === 'line');
 
             // ==== HELPER: Convert yyyy-mm-dd to Date ====
             function toDate(str) {
@@ -478,7 +544,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         startDate = new Date(now.getTime() - 7 * 86400000);
                         break;
                     case '1M':
-                        startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                        // Mulai tanggal 1 bulan sebelumnya
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                         break;
                     case '3M':
                         startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
@@ -661,6 +728,9 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             // ========================================================================
             function switchChartType(type) {
                 currentType = type;
+                // SIMPAN TIPE CHART TERAKHIR
+                localStorage.setItem("chartTypeLastUsed", type);
+
                 document.getElementById('btnBatang').classList.toggle('active', type === 'bar');
                 document.getElementById('btnGaris').classList.toggle('active', type === 'line');
 
@@ -683,7 +753,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             }
 
             // ========================================================================
-            // INIT
+            // EVENT LISTENERS
             // ========================================================================
             document.getElementById('btnBatang').addEventListener('click', () => switchChartType('bar'));
             document.getElementById('btnGaris').addEventListener('click', () => switchChartType('line'));
@@ -693,7 +763,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             });
 
             // Init pertama kali
-            handleRangeFilter('ALL');
+            handleRangeFilter('1W');
 
             // Auto refresh daily
             function autoRefreshDaily() {
