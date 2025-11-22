@@ -354,6 +354,16 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     </style>
                 </div>
             </div>
+<div id="chartInfo" style="
+    display:none;
+    width:100%;
+    height:100px;   /* sama seperti canvas height */
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:32px;
+    font-weight:bold;
+"></div>
 
             <canvas id="chartTransaksi" height="100"></canvas>
 
@@ -743,14 +753,61 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             // HANDLE FILTER RANGE
             // ========================================================================
             function handleRangeFilter(range) {
-                currentRange = range;
-                document.querySelectorAll('.filter-btn-range').forEach(b => b.classList.remove('active'));
-                document.querySelector(`.filter-btn-range[data-range="${range}"]`).classList.add('active');
+    currentRange = range;
 
-                const data = filterData(range);
-                updateChart(currentType, data);
-                chart.resetZoom();
-            }
+    document.querySelectorAll('.filter-btn-range')
+        .forEach(b => b.classList.remove('active'));
+
+    document.querySelector(`.filter-btn-range[data-range="${range}"]`)
+        .classList.add('active');
+
+    const chartInfo = document.getElementById("chartInfo");
+    const canvas = document.getElementById("chartTransaksi");
+
+    // ===========================================
+    // KHUSUS: Line + 1D → Hanya tampilkan angka
+    // ===========================================
+    if (currentType === 'line' && range === '1D') {
+        const data = filterData('1D');
+
+        let diff = 0;
+        if (data.awal.length > 0 && data.akhir.length > 0) {
+            diff = data.akhir[0] - data.awal[0];
+        }
+
+        // Set tinggi box sama seperti canvas
+        chartInfo.style.height = canvas.clientHeight + "px";
+
+        // Format warna & teks
+        if (diff > 0) {
+            chartInfo.style.color = "#41A67E";
+            chartInfo.innerHTML = `+${diff.toLocaleString("id-ID")}`;
+        } else if (diff < 0) {
+            chartInfo.style.color = "#BF1A1A";
+            chartInfo.innerHTML = `-${Math.abs(diff).toLocaleString("id-ID")}`;
+        } else {
+            chartInfo.style.color = "#ccc";
+            chartInfo.innerHTML = `0`;
+        }
+
+        // Tampilkan info, sembunyikan chart
+        chartInfo.style.display = "flex";
+        canvas.style.display = "none";
+
+        return; // stop render chart
+    }
+
+    // ===========================================
+    // Selain kondisi di atas → tampilkan chart normal
+    // ===========================================
+    chartInfo.style.display = "none";
+    canvas.style.display = "block";
+
+    const data = filterData(range);
+    updateChart(currentType, data);
+    chart.resetZoom();
+}
+
 
             // ========================================================================
             // EVENT LISTENERS
