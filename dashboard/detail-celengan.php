@@ -355,16 +355,17 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
 
-            <div id="chartInfo" style="
-    display:none;
-    width:100%;
-    height:100px;   /* sama seperti canvas height */
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:32px;
-    font-weight:bold;
-"></div>
+            <div id="chartInfo"
+                style="
+                    display:none;
+                    width:100%;
+                    height:100px;   /* sama seperti canvas height */
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                    font-size:32px;
+                    font-weight:bold;">
+            </div>
 
             <canvas id="chartTransaksi" height="100"></canvas>
 
