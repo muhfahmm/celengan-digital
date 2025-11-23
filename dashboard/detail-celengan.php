@@ -107,14 +107,12 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         .container {
             width: 80%;
             margin: 30px auto;
-            background: #fff;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .detail-card {
-            background: #fafafa;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 25px;
@@ -215,19 +213,64 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         <i id="themeIcon" class="bi bi-moon"></i>
     </div>
     <!-- OPTIONAL: DARK MODE STYLE -->
-    <style>
-        body.dark {
-            background: #1e1e1e;
-            color: #ffffff;
-        }
+<style>
+    /* Mode terang default */
+    body {
+        color: #333;
+        background-color: #f0f2f5;
+    }
 
-        /* contoh elemen lain jika ingin ikut gelap */
-        .card.dark {
-            background: #2b2b2b;
-            color: #fff;
-            border-color: #555;
-        }
-    </style>
+    /* Mode gelap */
+    body.dark {
+        background: #1e1e1e;
+        color: #e0e0e0; /* teks utama terang */
+    }
+
+    /* Elemen teks tambahan yang perlu disesuaikan */
+    body.dark h2,
+    body.dark h3,
+    body.dark p,
+    body.dark .info-text,
+    body.dark th,
+    body.dark td,
+    body.dark .detail-card,
+    body.dark table {
+        color: #e0e0e0;
+    }
+
+    /* Header tabel */
+    body.dark th {
+        background: #333;
+        color: #fff;
+    }
+
+    /* Border tabel di mode gelap */
+    body.dark td,
+    body.dark th {
+        border-color: #444;
+    }
+
+    /* Tombol aksi tetap terbaca */
+    body.dark .btn-edit,
+    body.dark .btn-hapus,
+    body.dark .btn-back {
+        filter: brightness(1.2);
+    }
+
+    /* Progress bar text info */
+    body.dark .info-text {
+        color: #ccc;
+    }
+
+    /* Link biasa */
+    body.dark a:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
+        color: #64b5f6;
+    }
+
+    body.dark a:hover:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
+        color: #90caf9;
+    }
+</style>
 
     <!-- SCRIPT DARK MODE -->
     <script>
@@ -304,9 +347,26 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         <td><?= $no++; ?></td>
                         <td><?= htmlspecialchars($t['tanggal']); ?></td>
                         <td><?= rupiah($t['nominal']); ?></td>
-                        <td style="color: <?= strtolower($t['tipe']) == 'masuk' ? 'green' : 'red'; ?>;">
-                            <?= htmlspecialchars($t['tipe']); ?>
-                        </td>
+                        <td class="jenis-transaksi <?= strtolower($t['tipe']) == 'masuk' ? 'masuk' : 'keluar'; ?>">
+    <?= htmlspecialchars($t['tipe']); ?>
+</td>
+<style>
+    /* Jenis transaksi */
+.jenis-transaksi.masuk {
+    color: #4CAF50; /* hijau terang */
+}
+.jenis-transaksi.keluar {
+    color: #f44336; /* merah terang */
+}
+
+/* Mode gelap: pertahankan kontras */
+body.dark .jenis-transaksi.masuk {
+    color: #81C784; /* hijau lebih terang */
+}
+body.dark .jenis-transaksi.keluar {
+    color: #EF9A9A; /* merah lebih terang */
+}
+</style>
                         <td><?= htmlspecialchars($t['keterangan']); ?></td>
                         <td>
                             <a href="../transaksi/edit-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" class="btn-edit">Edit</a>
