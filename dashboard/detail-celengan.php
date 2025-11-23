@@ -211,6 +211,55 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body>
+    <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
+        <i id="themeIcon" class="bi bi-moon"></i>
+    </div>
+    <!-- OPTIONAL: DARK MODE STYLE -->
+    <style>
+        body.dark {
+            background: #1e1e1e;
+            color: #ffffff;
+        }
+
+        /* contoh elemen lain jika ingin ikut gelap */
+        .card.dark {
+            background: #2b2b2b;
+            color: #fff;
+            border-color: #555;
+        }
+    </style>
+
+    <!-- SCRIPT DARK MODE -->
+    <script>
+        const body = document.body;
+        const toggleBtn = document.getElementById("darkToggle");
+        const themeIcon = document.getElementById("themeIcon");
+
+        // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
+        const savedTheme = localStorage.getItem("theme");
+
+        if (savedTheme === "dark") {
+            body.classList.add("dark");
+            themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+        }
+
+        // === 2. KLIK TOGGLE ===
+        toggleBtn.onclick = function() {
+            body.classList.toggle("dark");
+
+            const isDark = body.classList.contains("dark");
+
+            // Ubah ikon
+            if (isDark) {
+                themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+                localStorage.setItem("theme", "dark");
+            } else {
+                themeIcon.classList.replace("bi-brightness-high", "bi-moon");
+                localStorage.setItem("theme", "light");
+            }
+        };
+    </script>
+
     <div class="container">
         <a href="index.php" class="btn-back">← Kembali</a>
 
@@ -541,9 +590,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 };
             }
 
-            // ========================================================================
-            // FILTER DATA BERDASARKAN RANGE & TIPE CHART
-            // ========================================================================
             function filterData(range) {
                 const now = new Date();
                 let startDate;
@@ -614,9 +660,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 return data;
             }
 
-            // ========================================================================
-            // UPDATE CHART BERDASARKAN TIPE
-            // ========================================================================
             function updateChart(type, data) {
                 if (chart) chart.destroy();
 
