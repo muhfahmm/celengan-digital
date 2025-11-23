@@ -18,6 +18,8 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Dashboard Celengan</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/main.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,7 +29,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         h2 {
             margin-top: 20px;
-            color: #333;
         }
 
         a {
@@ -46,7 +47,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         h3 {
             margin-bottom: 15px;
-            color: #222;
         }
 
         .btn {
@@ -100,7 +100,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
-            color: #333;
         }
 
         table {
@@ -183,7 +182,62 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <div class="container">
-        <h2>Celengan <?php echo $_SESSION['username']; ?></h2>
+        <!-- HEADER -->
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="margin-top: 0;">Celengan <?php echo $_SESSION['username']; ?></h2>
+
+    <!-- TOGGLE DARK MODE -->
+    <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
+        <i id="themeIcon" class="bi bi-moon"></i>
+    </div>
+</div>
+
+<!-- OPTIONAL: DARK MODE STYLE -->
+<style>
+    body.dark {
+        background: #1e1e1e;
+        color: #ffffff;
+    }
+
+    /* contoh elemen lain jika ingin ikut gelap */
+    .card.dark {
+        background: #2b2b2b;
+        color: #fff;
+        border-color: #555;
+    }
+</style>
+
+<!-- SCRIPT DARK MODE -->
+<script>
+    const body = document.body;
+    const toggleBtn = document.getElementById("darkToggle");
+    const themeIcon = document.getElementById("themeIcon");
+
+    // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+        body.classList.add("dark");
+        themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+    }
+
+    // === 2. KLIK TOGGLE ===
+    toggleBtn.onclick = function () {
+        body.classList.toggle("dark");
+
+        const isDark = body.classList.contains("dark");
+
+        // Ubah ikon
+        if (isDark) {
+            themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+            localStorage.setItem("theme", "dark");
+        } else {
+            themeIcon.classList.replace("bi-brightness-high", "bi-moon");
+            localStorage.setItem("theme", "light");
+        }
+    };
+</script>
+
         <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
         <a href="../auth/logout.php" class="logout-btn">Logout</a>
 
