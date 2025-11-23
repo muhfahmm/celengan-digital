@@ -21,7 +21,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
         }
@@ -40,7 +39,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             width: 90%;
             max-width: 900px;
             margin: 30px auto;
-            background: #fff;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -89,7 +87,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-bottom: 25px;
             padding: 20px;
             border-radius: 10px;
-            background-color: #fafafa;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }

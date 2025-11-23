@@ -799,9 +799,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     return; // stop render chart
                 }
 
-                // ===========================================
-                // Selain kondisi di atas → tampilkan chart normal
-                // ===========================================
                 chartInfo.style.display = "none";
                 canvas.style.display = "block";
 
@@ -810,10 +807,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 chart.resetZoom();
             }
 
-
-            // ========================================================================
-            // EVENT LISTENERS
-            // ========================================================================
             document.getElementById('btnBatang').addEventListener('click', () => switchChartType('bar'));
             document.getElementById('btnGaris').addEventListener('click', () => switchChartType('line'));
 
