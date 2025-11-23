@@ -404,18 +404,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
 
-            <div id="chartInfo"
-                style="
-                    display:none;
-                    width:100%;
-                    height:100px;   /* sama seperti canvas height */
-                    display:flex;
-                    justify-content:center;
-                    align-items:center;
-                    font-size:32px;
-                    font-weight:bold;">
-            </div>
-
             <canvas id="chartTransaksi" height="100"></canvas>
 
             <!-- RESET ZOOM BUTTON -->
@@ -590,6 +578,9 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 };
             }
 
+            // ========================================================================
+            // FILTER DATA BERDASARKAN RANGE & TIPE CHART
+            // ========================================================================
             function filterData(range) {
                 const now = new Date();
                 let startDate;
@@ -660,6 +651,9 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 return data;
             }
 
+            // ========================================================================
+            // UPDATE CHART BERDASARKAN TIPE
+            // ========================================================================
             function updateChart(type, data) {
                 if (chart) chart.destroy();
 
@@ -799,57 +793,17 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             // ========================================================================
             function handleRangeFilter(range) {
                 currentRange = range;
-
-                document.querySelectorAll('.filter-btn-range')
-                    .forEach(b => b.classList.remove('active'));
-
-                document.querySelector(`.filter-btn-range[data-range="${range}"]`)
-                    .classList.add('active');
-
-                const chartInfo = document.getElementById("chartInfo");
-                const canvas = document.getElementById("chartTransaksi");
-
-                // ===========================================
-                // KHUSUS: Line + 1D → Hanya tampilkan angka
-                // ===========================================
-                if (currentType === 'line' && range === '1D') {
-                    const data = filterData('1D');
-
-                    let diff = 0;
-                    if (data.awal.length > 0 && data.akhir.length > 0) {
-                        diff = data.akhir[0] - data.awal[0];
-                    }
-
-                    // Set tinggi box sama seperti canvas
-                    chartInfo.style.height = canvas.clientHeight + "px";
-
-                    // Format warna & teks
-                    if (diff > 0) {
-                        chartInfo.style.color = "#41A67E";
-                        chartInfo.innerHTML = `+${diff.toLocaleString("id-ID")}`;
-                    } else if (diff < 0) {
-                        chartInfo.style.color = "#BF1A1A";
-                        chartInfo.innerHTML = `-${Math.abs(diff).toLocaleString("id-ID")}`;
-                    } else {
-                        chartInfo.style.color = "#ccc";
-                        chartInfo.innerHTML = `0`;
-                    }
-
-                    // Tampilkan info, sembunyikan chart
-                    chartInfo.style.display = "flex";
-                    canvas.style.display = "none";
-
-                    return; // stop render chart
-                }
-
-                chartInfo.style.display = "none";
-                canvas.style.display = "block";
+                document.querySelectorAll('.filter-btn-range').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.filter-btn-range[data-range="${range}"]`).classList.add('active');
 
                 const data = filterData(range);
                 updateChart(currentType, data);
                 chart.resetZoom();
             }
 
+            // ========================================================================
+            // EVENT LISTENERS
+            // ========================================================================
             document.getElementById('btnBatang').addEventListener('click', () => switchChartType('bar'));
             document.getElementById('btnGaris').addEventListener('click', () => switchChartType('line'));
 
