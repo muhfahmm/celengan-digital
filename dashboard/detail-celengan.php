@@ -209,111 +209,273 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body>
-    <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
-        <i id="themeIcon" class="bi bi-moon"></i>
-    </div>
-    <!-- OPTIONAL: DARK MODE STYLE -->
-<style>
-    /* Mode terang default */
-    body {
-        color: #333;
-        background-color: #f0f2f5;
-    }
-
-    /* Mode gelap */
-    body.dark {
-        background: #1e1e1e;
-        color: #e0e0e0; /* teks utama terang */
-    }
-
-    /* Elemen teks tambahan yang perlu disesuaikan */
-    body.dark h2,
-    body.dark h3,
-    body.dark p,
-    body.dark .info-text,
-    body.dark th,
-    body.dark td,
-    body.dark .detail-card,
-    body.dark table {
-        color: #e0e0e0;
-    }
-
-    /* Header tabel */
-    body.dark th {
-        background: #333;
-        color: #fff;
-    }
-
-    /* Border tabel di mode gelap */
-    body.dark td,
-    body.dark th {
-        border-color: #444;
-    }
-
-    /* Tombol aksi tetap terbaca */
-    body.dark .btn-edit,
-    body.dark .btn-hapus,
-    body.dark .btn-back {
-        filter: brightness(1.2);
-    }
-
-    /* Progress bar text info */
-    body.dark .info-text {
-        color: #ccc;
-    }
-
-    /* Link biasa */
-    body.dark a:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
-        color: #64b5f6;
-    }
-
-    body.dark a:hover:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
-        color: #90caf9;
-    }
-</style>
-
-    <!-- SCRIPT DARK MODE -->
-    <script>
-        const body = document.body;
-        const toggleBtn = document.getElementById("darkToggle");
-        const themeIcon = document.getElementById("themeIcon");
-
-        // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
-        const savedTheme = localStorage.getItem("theme");
-
-        if (savedTheme === "dark") {
-            body.classList.add("dark");
-            themeIcon.classList.replace("bi-moon", "bi-brightness-high");
-        }
-
-        // === 2. KLIK TOGGLE ===
-        toggleBtn.onclick = function() {
-            body.classList.toggle("dark");
-
-            const isDark = body.classList.contains("dark");
-
-            // Ubah ikon
-            if (isDark) {
-                themeIcon.classList.replace("bi-moon", "bi-brightness-high");
-                localStorage.setItem("theme", "dark");
-            } else {
-                themeIcon.classList.replace("bi-brightness-high", "bi-moon");
-                localStorage.setItem("theme", "light");
-            }
-        };
-    </script>
-
     <div class="container">
-        <a href="index.php" class="btn-back">← Kembali</a>
+        <div style="display: flex; justify-content:space-between;">
+            <a href="index.php" class="btn-back">← Kembali</a>
+            <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
+                <i id="themeIcon" class="bi bi-moon" style="font-size: 25px;"></i>
+                <!-- OPTIONAL: DARK MODE STYLE -->
+                <style>
+                    /* Mode terang default */
+                    body {
+                        color: #333;
+                        background-color: #f0f2f5;
+                    }
+
+                    /* Mode gelap */
+                    body.dark {
+                        background: #1e1e1e;
+                        color: #e0e0e0;
+                        /* teks utama terang */
+                    }
+
+                    /* Elemen teks tambahan yang perlu disesuaikan */
+                    body.dark h2,
+                    body.dark h3,
+                    body.dark p,
+                    body.dark .info-text,
+                    body.dark th,
+                    body.dark td,
+                    body.dark .detail-card,
+                    body.dark table {
+                        color: #e0e0e0;
+                    }
+
+                    /* Header tabel */
+                    body.dark th {
+                        background: #333;
+                        color: #fff;
+                    }
+
+                    /* Border tabel di mode gelap */
+                    body.dark td,
+                    body.dark th {
+                        border-color: #444;
+                    }
+
+                    /* Tombol aksi tetap terbaca */
+                    body.dark .btn-edit,
+                    body.dark .btn-hapus,
+                    body.dark .btn-back {
+                        filter: brightness(1.2);
+                    }
+
+                    /* Progress bar text info */
+                    body.dark .info-text {
+                        color: #ccc;
+                    }
+
+                    body.dark a:hover:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
+                        color: #90caf9;
+                    }
+                </style>
+
+                <!-- SCRIPT DARK MODE -->
+                <script>
+                    const body = document.body;
+                    const toggleBtn = document.getElementById("darkToggle");
+                    const themeIcon = document.getElementById("themeIcon");
+
+                    // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
+                    const savedTheme = localStorage.getItem("theme");
+
+                    if (savedTheme === "dark") {
+                        body.classList.add("dark");
+                        themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+                    }
+
+                    // === 2. KLIK TOGGLE ===
+                    toggleBtn.onclick = function() {
+                        body.classList.toggle("dark");
+
+                        const isDark = body.classList.contains("dark");
+
+                        // Ubah ikon
+                        if (isDark) {
+                            themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+                            localStorage.setItem("theme", "dark");
+                        } else {
+                            themeIcon.classList.replace("bi-brightness-high", "bi-moon");
+                            localStorage.setItem("theme", "light");
+                        }
+                    };
+                </script>
+            </div>
+        </div>
 
         <div class="detail-card">
             <h2><?= htmlspecialchars($celengan['nama_celengan']); ?></h2>
 
-            <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>">Tambah Progress</a> |
-            <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?= $celengan['id']; ?>">Kurangi Progress</a>
-            <br>
-            <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>">Edit</a> |
-            <a href="../data-celengan/hapus-celengan.php?id=<?= $celengan['id']; ?>" onclick="return confirm('Yakin ingin menghapus celengan ini?')">Hapus</a>
+            <div class="action-buttons">
+                <div class="button-group">
+                    <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Tambah Progress
+                    </a>
+                    <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-warning">
+                        <i class="bi bi-dash-circle"></i> Kurangi Progress
+                    </a>
+                </div>
+
+                <div class="button-group">
+                    <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-edit">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="../data-celengan/hapus-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus celengan ini?')">
+                        <i class="bi bi-trash"></i> Hapus
+                    </a>
+                </div>
+            </div>
+
+            <style>
+                .action-buttons {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                    margin: 20px 0;
+                }
+
+                .button-group {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+
+                .btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 10px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+
+                .btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                    text-decoration: none;
+                }
+
+                .btn:active {
+                    transform: translateY(0);
+                }
+
+                /* Success Button - Tambah Progress */
+                .btn-success {
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    color: white;
+                }
+
+                .btn-success:hover {
+                    background: linear-gradient(135deg, #218838, #1e9e8a);
+                    color: white;
+                }
+
+                /* Warning Button - Kurangi Progress */
+                .btn-warning {
+                    background: linear-gradient(135deg, #ffc107, #fd7e14);
+                    color: white;
+                }
+
+                .btn-warning:hover {
+                    background: linear-gradient(135deg, #e0a800, #e55a08);
+                    color: white;
+                }
+
+                /* Edit Button */
+                .btn-edit {
+                    background: linear-gradient(135deg, #17a2b8, #6f42c1);
+                    color: white;
+                }
+
+                .btn-edit:hover {
+                    background: linear-gradient(135deg, #138496, #5a32a3);
+                    color: white;
+                }
+
+                /* Danger Button - Hapus */
+                .btn-danger {
+                    background: linear-gradient(135deg, #dc3545, #e83e8c);
+                    color: white;
+                }
+
+                .btn-danger:hover {
+                    background: linear-gradient(135deg, #c82333, #d91a7a);
+                    color: white;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 768px) {
+                    .action-buttons {
+                        gap: 8px;
+                    }
+
+                    .button-group {
+                        flex-direction: column;
+                    }
+
+                    .btn {
+                        justify-content: center;
+                        padding: 12px 16px;
+                    }
+                }
+
+                /* Icon styling */
+                .bi {
+                    font-size: 16px;
+                }
+
+                /* Dark Mode Styling */
+                body.dark .btn {
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+                body.dark .btn:hover {
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+                    filter: brightness(1.1);
+                }
+
+                /* Success Button - Dark Mode */
+                body.dark .btn-success {
+                    background: linear-gradient(135deg, #2ecc71, #1abc9c);
+                }
+
+                body.dark .btn-success:hover {
+                    background: linear-gradient(135deg, #27ae60, #16a085);
+                }
+
+                /* Warning Button - Dark Mode */
+                body.dark .btn-warning {
+                    background: linear-gradient(135deg, #f39c12, #e67e22);
+                }
+
+                body.dark .btn-warning:hover {
+                    background: linear-gradient(135deg, #d35400, #d35400);
+                }
+
+                /* Edit Button - Dark Mode */
+                body.dark .btn-edit {
+                    background: linear-gradient(135deg, #3498db, #9b59b6);
+                }
+
+                body.dark .btn-edit:hover {
+                    background: linear-gradient(135deg, #2980b9, #8e44ad);
+                }
+
+                /* Danger Button - Dark Mode */
+                body.dark .btn-danger {
+                    background: linear-gradient(135deg, #e74c3c, #e84393);
+                }
+
+                body.dark .btn-danger:hover {
+                    background: linear-gradient(135deg, #c0392b, #fd79a8);
+                }
+            </style>
 
             <p><b>Total:</b> <?= rupiah($celengan['total']); ?></p>
             <p><b>Target:</b> <?= rupiah($celengan['target']); ?></p>
@@ -348,25 +510,31 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         <td><?= htmlspecialchars($t['tanggal']); ?></td>
                         <td><?= rupiah($t['nominal']); ?></td>
                         <td class="jenis-transaksi <?= strtolower($t['tipe']) == 'masuk' ? 'masuk' : 'keluar'; ?>">
-    <?= htmlspecialchars($t['tipe']); ?>
-</td>
-<style>
-    /* Jenis transaksi */
-.jenis-transaksi.masuk {
-    color: #4CAF50; /* hijau terang */
-}
-.jenis-transaksi.keluar {
-    color: #f44336; /* merah terang */
-}
+                            <?= htmlspecialchars($t['tipe']); ?>
+                        </td>
+                        <style>
+                            /* Jenis transaksi */
+                            .jenis-transaksi.masuk {
+                                color: #4CAF50;
+                                /* hijau terang */
+                            }
 
-/* Mode gelap: pertahankan kontras */
-body.dark .jenis-transaksi.masuk {
-    color: #81C784; /* hijau lebih terang */
-}
-body.dark .jenis-transaksi.keluar {
-    color: #EF9A9A; /* merah lebih terang */
-}
-</style>
+                            .jenis-transaksi.keluar {
+                                color: #f44336;
+                                /* merah terang */
+                            }
+
+                            /* Mode gelap: pertahankan kontras */
+                            body.dark .jenis-transaksi.masuk {
+                                color: #81C784;
+                                /* hijau lebih terang */
+                            }
+
+                            body.dark .jenis-transaksi.keluar {
+                                color: #EF9A9A;
+                                /* merah lebih terang */
+                            }
+                        </style>
                         <td><?= htmlspecialchars($t['keterangan']); ?></td>
                         <td>
                             <a href="../transaksi/edit-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" class="btn-edit">Edit</a>
