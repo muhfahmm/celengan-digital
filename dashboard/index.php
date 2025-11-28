@@ -215,7 +215,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 color: #dddddd !important;
             }
 
-            /* Header table saat dark mode */
             body.dark .celengan-card th {
                 background-color: #333 !important;
                 color: #fff !important;
