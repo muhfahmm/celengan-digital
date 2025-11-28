@@ -199,7 +199,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 color: #ffffff;
             }
 
-            /* contoh elemen lain jika ingin ikut gelap */
             .card.dark {
                 background: #2b2b2b;
                 color: #fff;
