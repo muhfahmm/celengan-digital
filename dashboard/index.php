@@ -192,7 +192,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- OPTIONAL: DARK MODE STYLE -->
         <style>
             body.dark {
                 background: #1e1e1e;
