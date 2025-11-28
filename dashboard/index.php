@@ -227,7 +227,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 border-color: #555 !important;
             }
 
-            /* Background card */
             body.dark .celengan-card {
                 background: #2b2b2b !important;
                 color: #fff !important;
