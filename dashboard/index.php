@@ -206,7 +206,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 border-color: #555;
             }
 
-            /* === LINK DI CELENGAN SAAT DARK MODE === */
             body.dark .celengan-card a {
                 color: #ffffff !important;
             }
