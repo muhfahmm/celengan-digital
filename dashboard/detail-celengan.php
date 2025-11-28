@@ -264,10 +264,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     body.dark .info-text {
                         color: #ccc;
                     }
-
-                    body.dark a:hover:not(.btn-back):not(.btn-edit):not(.btn-hapus) {
-                        color: #90caf9;
-                    }
                 </style>
 
                 <!-- SCRIPT DARK MODE -->
@@ -387,17 +383,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     color: white;
                 }
 
-                /* Edit Button */
-                .btn-edit {
-                    background: linear-gradient(135deg, #17a2b8, #6f42c1);
-                    color: white;
-                }
-
-                .btn-edit:hover {
-                    background: linear-gradient(135deg, #138496, #5a32a3);
-                    color: white;
-                }
-
                 /* Danger Button - Hapus */
                 .btn-danger {
                     background: linear-gradient(135deg, #dc3545, #e83e8c);
@@ -456,15 +441,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
                 body.dark .btn-warning:hover {
                     background: linear-gradient(135deg, #d35400, #d35400);
-                }
-
-                /* Edit Button - Dark Mode */
-                body.dark .btn-edit {
-                    background: linear-gradient(135deg, #3498db, #9b59b6);
-                }
-
-                body.dark .btn-edit:hover {
-                    background: linear-gradient(135deg, #2980b9, #8e44ad);
                 }
 
                 /* Danger Button - Dark Mode */
