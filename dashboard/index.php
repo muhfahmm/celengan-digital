@@ -221,7 +221,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 color: #fff !important;
             }
 
-            /* Border dan teks tabel */
             body.dark .celengan-card td {
                 color: #fff !important;
                 border-color: #555 !important;
