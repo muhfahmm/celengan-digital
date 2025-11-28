@@ -207,32 +207,31 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
 
             /* === LINK DI CELENGAN SAAT DARK MODE === */
-body.dark .celengan-card a {
-    color: #ffffff !important;
-}
+            body.dark .celengan-card a {
+                color: #ffffff !important;
+            }
 
-body.dark .celengan-card a:hover {
-    color: #dddddd !important;
-}
+            body.dark .celengan-card a:hover {
+                color: #dddddd !important;
+            }
 
-/* Header table saat dark mode */
-body.dark .celengan-card th {
-    background-color: #333 !important;
-    color: #fff !important;
-}
+            /* Header table saat dark mode */
+            body.dark .celengan-card th {
+                background-color: #333 !important;
+                color: #fff !important;
+            }
 
-/* Border dan teks tabel */
-body.dark .celengan-card td {
-    color: #fff !important;
-    border-color: #555 !important;
-}
+            /* Border dan teks tabel */
+            body.dark .celengan-card td {
+                color: #fff !important;
+                border-color: #555 !important;
+            }
 
-/* Background card */
-body.dark .celengan-card {
-    background: #2b2b2b !important;
-    color: #fff !important;
-}
-
+            /* Background card */
+            body.dark .celengan-card {
+                background: #2b2b2b !important;
+                color: #fff !important;
+            }
         </style>
 
         <!-- SCRIPT DARK MODE -->
