@@ -226,7 +226,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 const toggleBtn = document.getElementById("darkToggle");
                 const themeIcon = document.getElementById("themeIcon");
 
-                // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
                 const savedTheme = localStorage.getItem("theme");
 
                 if (savedTheme === "dark") {
@@ -234,13 +233,11 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     themeIcon.classList.replace("bi-moon", "bi-brightness-high");
                 }
 
-                // === 2. KLIK TOGGLE ===
                 toggleBtn.onclick = function() {
                     body.classList.toggle("dark");
 
                     const isDark = body.classList.contains("dark");
-
-                    // Ubah ikon
+                    
                     if (isDark) {
                         themeIcon.classList.replace("bi-moon", "bi-brightness-high");
                         localStorage.setItem("theme", "dark");
