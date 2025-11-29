@@ -214,10 +214,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     body.dark {
                         background: #1e1e1e;
                         color: #e0e0e0;
-                        /* teks utama terang */
                     }
 
-                    /* Elemen teks tambahan yang perlu disesuaikan */
                     body.dark h2,
                     body.dark h3,
                     body.dark p,
@@ -344,7 +342,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     transform: translateY(0);
                 }
 
-                /* Success Button - Tambah Progress */
                 .btn-success {
                     background: linear-gradient(135deg, #28a745, #20c997);
                     color: white;
@@ -355,7 +352,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     color: white;
                 }
 
-                /* Warning Button - Kurangi Progress */
                 .btn-warning {
                     background: linear-gradient(135deg, #ffc107, #fd7e14);
                     color: white;
@@ -366,7 +362,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     color: white;
                 }
 
-                /* Danger Button - Hapus */
                 .btn-danger {
                     background: linear-gradient(135deg, #dc3545, #e83e8c);
                     color: white;
@@ -377,7 +372,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     color: white;
                 }
 
-                /* Responsive Design */
                 @media (max-width: 768px) {
                     .action-buttons {
                         gap: 8px;
@@ -393,12 +387,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     }
                 }
 
-                /* Icon styling */
                 .bi {
                     font-size: 16px;
                 }
 
-                /* Dark Mode Styling */
                 body.dark .btn {
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 }
@@ -408,7 +400,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     filter: brightness(1.1);
                 }
 
-                /* Success Button - Dark Mode */
                 body.dark .btn-success {
                     background: linear-gradient(135deg, #2ecc71, #1abc9c);
                 }
@@ -417,7 +408,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     background: linear-gradient(135deg, #27ae60, #16a085);
                 }
 
-                /* Warning Button - Dark Mode */
                 body.dark .btn-warning {
                     background: linear-gradient(135deg, #f39c12, #e67e22);
                 }
@@ -426,7 +416,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     background: linear-gradient(135deg, #d35400, #d35400);
                 }
 
-                /* Danger Button - Dark Mode */
                 body.dark .btn-danger {
                     background: linear-gradient(135deg, #e74c3c, #e84393);
                 }
@@ -472,7 +461,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                             <?= htmlspecialchars($t['tipe']); ?>
                         </td>
                         <style>
-                            /* Jenis transaksi */
                             .jenis-transaksi.masuk {
                                 color: #4CAF50;
                                 /* hijau terang */
@@ -483,15 +471,12 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                                 /* merah terang */
                             }
 
-                            /* Mode gelap: pertahankan kontras */
                             body.dark .jenis-transaksi.masuk {
                                 color: #81C784;
-                                /* hijau lebih terang */
                             }
 
                             body.dark .jenis-transaksi.keluar {
                                 color: #EF9A9A;
-                                /* merah lebih terang */
                             }
                         </style>
                         <td><?= htmlspecialchars($t['keterangan']); ?></td>
@@ -505,24 +490,19 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     <div style="margin-top: 15px; text-align: center;">
 
                         <?php
-                        // Tentukan jumlah tombol maksimal
                         $max_buttons = 5;
 
-                        // Hitung range tombol
                         $start = max(1, $page - 2);
                         $end   = min($total_pages, $start + $max_buttons - 1);
 
-                        // Jika di akhir, geser range supaya tetap 5
                         if ($end - $start < $max_buttons - 1) {
                             $start = max(1, $end - $max_buttons + 1);
                         }
 
-                        // Tombol sebelumnya
                         if ($page > 1): ?>
                             <a href="?id=<?= $celengan_id ?>&page=<?= $page - 1 ?>" style="margin-right: 5px; text-decoration:none; color:#007bff;">&laquo;</a>
                         <?php endif; ?>
 
-                        <!-- Tombol halaman pertama + titik jika jauh -->
                         <?php if ($start > 1): ?>
                             <a href="?id=<?= $celengan_id ?>&page=1" style="padding:5px 10px; border-radius:5px; background:#f0f0f0; color:black; text-decoration:none;">1</a>
                             <?php if ($start > 2): ?>
@@ -530,7 +510,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                             <?php endif; ?>
                         <?php endif; ?>
 
-                        <!-- Tombol utama (maksimal 5 tombol) -->
                         <?php for ($i = $start; $i <= $end; $i++): ?>
                             <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>"
                                 style="padding:5px 10px; border-radius:5px; margin:0 2px; text-decoration:none;
@@ -539,7 +518,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                             </a>
                         <?php endfor; ?>
 
-                        <!-- Tombol terakhir + titik jika jauh -->
                         <?php if ($end < $total_pages): ?>
                             <?php if ($end < $total_pages - 1): ?>
                                 <span style="margin:0 5px;">...</span>
@@ -550,7 +528,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                             </a>
                         <?php endif; ?>
 
-                        <!-- Tombol selanjutnya -->
                         <?php if ($page < $total_pages): ?>
                             <a href="?id=<?= $celengan_id ?>&page=<?= $page + 1 ?>" style="margin-left: 5px; text-decoration:none; color:#007bff;">&raquo;</a>
                         <?php endif; ?>
@@ -593,13 +570,11 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
             <canvas id="chartTransaksi" height="100"></canvas>
 
-            <!-- RESET ZOOM BUTTON -->
             <div style="text-align:center; margin-bottom:10px;">
                 <button onclick="chart.resetZoom()" class="filter-btn">Reset Zoom</button>
             </div>
         </div>
 
-        <!-- Filter Range Buttons -->
         <div style="text-align:center; margin-bottom:15px;">
             <button class="filter-btn-range" data-range="1D">1D</button>
             <button class="filter-btn-range" data-range="1W">1W</button>
@@ -608,7 +583,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             <button class="filter-btn-range" data-range="1Y">1Y</button>
             <button class="filter-btn-range" data-range="ALL">All</button>
             <script>
-                // Tambahkan CSS ke halaman lewat JS
                 const css = `
                 .filter-btn-range {
                     background: #222;
@@ -634,21 +608,16 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 styleTag.innerHTML = css;
                 document.head.appendChild(styleTag);
 
-
-                // Range khusus chart batang (bar)
                 const rangeBar = ["1D", "1W", "1M", "2M", "3M", "ALL"];
 
-                // Range khusus chart garis (line)
                 const rangeLine = ["1D", "1W", "1M", "3M", "6M", "1Y", "ALL"];
 
-                // Container tombol filter range (cari dari tombol yang sudah ada)
                 const rangeBox = document.querySelector("div > .filter-btn-range")?.parentElement;
 
-                // Fungsi generate tombol range baru
                 function generateRangeButtons(chartType) {
                     if (!rangeBox) return;
 
-                    rangeBox.innerHTML = ""; // hapus tombol lama
+                    rangeBox.innerHTML = "";
 
                     const list = (chartType === "bar") ? rangeBar : rangeLine;
 
@@ -658,10 +627,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         btn.dataset.range = range;
                         btn.innerText = range;
 
-                        // event klik — tetap memakai handleRangeFilter milikmu
                         btn.addEventListener("click", () => handleRangeFilter(range));
 
-                        // tandai aktif
                         if (range === currentRange) {
                             btn.classList.add("active");
                         }
@@ -670,19 +637,14 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                     });
                 }
 
-                // ==== Patch tombol tipe chart (TANPA mengubah fungsi aslimu) ====
-
-                // Batang
                 document.getElementById("btnBatang").addEventListener("click", () => {
                     setTimeout(() => generateRangeButtons("bar"), 10);
                 });
 
-                // Garis
                 document.getElementById("btnGaris").addEventListener("click", () => {
                     setTimeout(() => generateRangeButtons("line"), 10);
                 });
 
-                // ==== Saat page load, buat tombol sesuai tipe chart terakhir ====
                 setTimeout(() => generateRangeButtons(currentType), 50);
             </script>
         </div>
