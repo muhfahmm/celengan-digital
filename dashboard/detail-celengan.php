@@ -463,12 +463,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         <style>
                             .jenis-transaksi.masuk {
                                 color: #4CAF50;
-                                /* hijau terang */
                             }
 
                             .jenis-transaksi.keluar {
                                 color: #f44336;
-                                /* merah terang */
                             }
 
                             body.dark .jenis-transaksi.masuk {
@@ -539,7 +537,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         <div id="chartContainer">
             <div style="display: flex;  justify-content:space-between;">
                 <h3 style="margin-top: 0;">Grafik Pemasukan dan Pengeluaran</h3>
-                <!-- Toggle Button Chart Type -->
                 <div class="chart-filter">
                     <button id="btnBatang" class="filter-btn active"><i class="bi bi-bar-chart" style="font-size: 22px;"></i></button>
                     <button id="btnGaris" class="filter-btn"><i class="bi bi-graph-up" style="font-size: 22px;"></i></button>
@@ -650,7 +647,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <script>
-            // ==== RAW DATA ====
             const rawLabels = <?= json_encode($labels); ?>;
             const rawSaldoAwal = <?= json_encode($saldo_awal); ?>;
             const rawSaldoAkhir = <?= json_encode($saldo_akhir); ?>;
@@ -659,21 +655,16 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             const ctx = document.getElementById('chartTransaksi').getContext('2d');
             let chart;
 
-            // ==== PERSISTENCE: Ambil tipe chart terakhir dari localStorage (jika ada) ====
-            // Ini harus diletakkan sebelum init sehingga handleRangeFilter('1W') yang asli tetap dipakai
             let currentType = localStorage.getItem("chartTypeLastUsed") || 'bar';
 
-            // Set tombol active sesuai tipe yang terbaca (agar UI konsisten)
             document.getElementById('btnBatang').classList.toggle('active', currentType === 'bar');
             document.getElementById('btnGaris').classList.toggle('active', currentType === 'line');
 
-            // ==== HELPER: Convert yyyy-mm-dd to Date ====
             function toDate(str) {
                 const [y, m, d] = str.split('-').map(Number);
                 return new Date(y, m - 1, d);
             }
 
-            // ==== HELPER: Ambil saldo sebelum tanggal tertentu ====
             function getSaldoSebelumTanggal(targetDate) {
                 let saldo = 0;
                 for (let i = 0; i < rawLabels.length; i++) {
@@ -684,14 +675,12 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 return saldo;
             }
 
-            // ==== HELPER: warna berdasarkan diff total ====
             function colorForDiff(diff) {
                 if (diff > 0) return '#41A67E';
                 if (diff < 0) return '#BF1A1A';
                 return 'rgba(180,180,180,0.6)';
             }
 
-            // ==== MERGE TRANSAKSI PER TANGGAL (untuk line/bar non-1D/1W) ====
             function mergeByDate(labels, awal, akhir, colors) {
                 const map = Object.create(null);
                 labels.forEach((tgl, i) => {
@@ -727,9 +716,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 };
             }
 
-            // ========================================================================
-            // FILTER DATA BERDASARKAN RANGE & TIPE CHART
-            // ========================================================================
             function filterData(range) {
                 const now = new Date();
                 let startDate;
@@ -742,7 +728,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         startDate = new Date(now.getTime() - 7 * 86400000);
                         break;
                     case '1M':
-                        // Mulai tanggal 1 bulan sebelumnya
                         startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                         break;
                     case '3M':
@@ -800,9 +785,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 return data;
             }
 
-            // ========================================================================
-            // UPDATE CHART BERDASARKAN TIPE
-            // ========================================================================
             function updateChart(type, data) {
                 if (chart) chart.destroy();
 
@@ -820,7 +802,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         borderWidth: 1
                     }];
                 } else if (type === 'line') {
-                    // Untuk line chart, kita plot saldo akhir sebagai titik, dan gunakan garis kontinu
                     const lineData = data.akhir;
                     const lineColors = data.colors.map(c => c);
                     const backgroundColors = data.colors.map(c => c + "33");
@@ -916,17 +897,10 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 });
             }
 
-            // ========================================================================
-            // GLOBAL STATE
-            // ========================================================================
             let currentRange = 'ALL';
 
-            // ========================================================================
-            // SWITCH TYPE
-            // ========================================================================
             function switchChartType(type) {
                 currentType = type;
-                // SIMPAN TIPE CHART TERAKHIR
                 localStorage.setItem("chartTypeLastUsed", type);
 
                 document.getElementById('btnBatang').classList.toggle('active', type === 'bar');
@@ -937,9 +911,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 chart.resetZoom();
             }
 
-            // ========================================================================
-            // HANDLE FILTER RANGE
-            // ========================================================================
             function handleRangeFilter(range) {
                 currentRange = range;
                 document.querySelectorAll('.filter-btn-range').forEach(b => b.classList.remove('active'));
@@ -950,9 +921,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 chart.resetZoom();
             }
 
-            // ========================================================================
-            // EVENT LISTENERS
-            // ========================================================================
             document.getElementById('btnBatang').addEventListener('click', () => switchChartType('bar'));
             document.getElementById('btnGaris').addEventListener('click', () => switchChartType('line'));
 
@@ -960,10 +928,8 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                 btn.addEventListener('click', () => handleRangeFilter(btn.dataset.range));
             });
 
-            // Init pertama kali
             handleRangeFilter('1W');
 
-            // Auto refresh daily
             function autoRefreshDaily() {
                 const last = localStorage.getItem("lastRefresh");
                 const now = new Date().toDateString();
