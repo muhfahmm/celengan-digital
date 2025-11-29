@@ -82,7 +82,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 3px 10px rgba(230, 57, 57, 0.3);
         }
 
-
         .celengan-card {
             margin-bottom: 25px;
             padding: 20px;
@@ -144,7 +143,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 16px;
         }
 
-        /* Tombol aksi */
         td a {
             color: #007bff;
             font-weight: 500;
@@ -155,16 +153,13 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #0056b3;
         }
 
-        /* Responsif */
         @media (max-width: 600px) {
             .container {
                 width: 95%;
                 padding: 15px;
             }
 
-            table,
-            th,
-            td {
+            table, th, td {
                 font-size: 12px;
             }
 
