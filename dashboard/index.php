@@ -159,7 +159,9 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 padding: 15px;
             }
 
-            table, th, td {
+            table,
+            th,
+            td {
                 font-size: 12px;
             }
 
@@ -183,71 +185,71 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
                 <i id="themeIcon" class="bi bi-moon"></i>
             </div>
-                    <style>
-            body.dark {
-                background: #1e1e1e;
-                color: #ffffff;
-            }
-
-            .card.dark {
-                background: #2b2b2b;
-                color: #fff;
-                border-color: #555;
-            }
-
-            body.dark .celengan-card a {
-                color: #ffffff !important;
-            }
-
-            body.dark .celengan-card a:hover {
-                color: #dddddd !important;
-            }
-
-            body.dark .celengan-card th {
-                background-color: #333 !important;
-                color: #fff !important;
-            }
-
-            body.dark .celengan-card td {
-                color: #fff !important;
-                border-color: #555 !important;
-            }
-
-            body.dark .celengan-card {
-                background: #2b2b2b !important;
-                color: #fff !important;
-            }
-        </style>
-
-        <script>
-            const body = document.body;
-            const toggleBtn = document.getElementById("darkToggle");
-            const themeIcon = document.getElementById("themeIcon");
-
-            // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
-            const savedTheme = localStorage.getItem("theme");
-
-            if (savedTheme === "dark") {
-                body.classList.add("dark");
-                themeIcon.classList.replace("bi-moon", "bi-brightness-high");
-            }
-
-            // === 2. KLIK TOGGLE ===
-            toggleBtn.onclick = function() {
-                body.classList.toggle("dark");
-
-                const isDark = body.classList.contains("dark");
-
-                // Ubah ikon
-                if (isDark) {
-                    themeIcon.classList.replace("bi-moon", "bi-brightness-high");
-                    localStorage.setItem("theme", "dark");
-                } else {
-                    themeIcon.classList.replace("bi-brightness-high", "bi-moon");
-                    localStorage.setItem("theme", "light");
+            <style>
+                body.dark {
+                    background: #1e1e1e;
+                    color: #ffffff;
                 }
-            };
-        </script>
+
+                .card.dark {
+                    background: #2b2b2b;
+                    color: #fff;
+                    border-color: #555;
+                }
+
+                body.dark .celengan-card a {
+                    color: #ffffff !important;
+                }
+
+                body.dark .celengan-card a:hover {
+                    color: #dddddd !important;
+                }
+
+                body.dark .celengan-card th {
+                    background-color: #333 !important;
+                    color: #fff !important;
+                }
+
+                body.dark .celengan-card td {
+                    color: #fff !important;
+                    border-color: #555 !important;
+                }
+
+                body.dark .celengan-card {
+                    background: #2b2b2b !important;
+                    color: #fff !important;
+                }
+            </style>
+
+            <script>
+                const body = document.body;
+                const toggleBtn = document.getElementById("darkToggle");
+                const themeIcon = document.getElementById("themeIcon");
+
+                // === 1. CEK LOCALSTORAGE SAAT HALAMAN DIBUKA ===
+                const savedTheme = localStorage.getItem("theme");
+
+                if (savedTheme === "dark") {
+                    body.classList.add("dark");
+                    themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+                }
+
+                // === 2. KLIK TOGGLE ===
+                toggleBtn.onclick = function() {
+                    body.classList.toggle("dark");
+
+                    const isDark = body.classList.contains("dark");
+
+                    // Ubah ikon
+                    if (isDark) {
+                        themeIcon.classList.replace("bi-moon", "bi-brightness-high");
+                        localStorage.setItem("theme", "dark");
+                    } else {
+                        themeIcon.classList.replace("bi-brightness-high", "bi-moon");
+                        localStorage.setItem("theme", "light");
+                    }
+                };
+            </script>
         </div>
 
         <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
