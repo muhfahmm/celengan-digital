@@ -177,17 +177,13 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <div class="container">
-        <!-- HEADER -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2 style="margin-top: 0;">Celengan <?php echo $_SESSION['username']; ?></h2>
 
-            <!-- TOGGLE DARK MODE -->
             <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
                 <i id="themeIcon" class="bi bi-moon"></i>
             </div>
-        </div>
-
-        <style>
+                    <style>
             body.dark {
                 background: #1e1e1e;
                 color: #ffffff;
@@ -223,7 +219,6 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         </style>
 
-        <!-- SCRIPT DARK MODE -->
         <script>
             const body = document.body;
             const toggleBtn = document.getElementById("darkToggle");
@@ -253,6 +248,7 @@ $celengan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
             };
         </script>
+        </div>
 
         <a href="../data-celengan/tambah-celengan.php" class="btn">+ Buat Celengan baru</a>
         <a href="../auth/logout.php" class="logout-btn">Logout</a>
