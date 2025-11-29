@@ -13,7 +13,6 @@ if (!isset($_GET['id'])) {
 $celengan_id = $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
-// Ambil detail celengan
 $stmt = $pdo->prepare("SELECT * FROM celengan WHERE id = ? AND user_id = ?");
 $stmt->execute([$celengan_id, $user_id]);
 $celengan = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -22,23 +21,19 @@ if (!$celengan) {
     die("Data celengan tidak ditemukan");
 }
 
-// Ambil daftar transaksi
 $stmt_transaksi = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal ASC");
 $stmt_transaksi->execute([$celengan_id]);
 $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
 
-// Hitung progress dan kekurangan
 $progress = $celengan['target'] > 0 ? round(($celengan['total'] / $celengan['target']) * 100) : 0;
 $kekurangan = $celengan['target'] - $celengan['total'];
 if ($kekurangan < 0) $kekurangan = 0;
 
-// Format rupiah
 function rupiah($angka)
 {
     return 'Rp' . number_format($angka, 0, ',', '.');
 }
 
-// Siapkan data untuk chart
 $labels = [];
 $data = [];
 $colors = [];
@@ -56,34 +51,30 @@ foreach ($transaksi as $t) {
     $nominal = (float)$t['nominal'];
     if (strtolower($t['tipe']) == 'masuk') {
         $total += $nominal;
-        $colors[] = '#41A67E'; // hijau naik
+        $colors[] = '#41A67E';
     } else {
         $total -= $nominal;
-        $colors[] = '#BF1A1A'; // merah turun
+        $colors[] = '#BF1A1A';
     }
 
     $saldo_akhir[] = $total;
 }
 
-// --- Pagination setup ---
 $limit = 10;
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-// Hitung total transaksi
 $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
 $count_stmt->execute([$celengan_id]);
 $total_transaksi = $count_stmt->fetchColumn();
 $total_pages = ceil($total_transaksi / $limit);
 
-// Ambil daftar transaksi per halaman
 $stmt_transaksi = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal ASC LIMIT ? OFFSET ?");
 $stmt_transaksi->bindValue(1, $celengan_id, PDO::PARAM_INT);
 $stmt_transaksi->bindValue(2, $limit, PDO::PARAM_INT);
 $stmt_transaksi->bindValue(3, $offset, PDO::PARAM_INT);
 $stmt_transaksi->execute();
 $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -214,15 +205,12 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             <a href="index.php" class="btn-back">← Kembali</a>
             <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
                 <i id="themeIcon" class="bi bi-moon" style="font-size: 25px;"></i>
-                <!-- OPTIONAL: DARK MODE STYLE -->
                 <style>
-                    /* Mode terang default */
                     body {
                         color: #333;
                         background-color: #f0f2f5;
                     }
 
-                    /* Mode gelap */
                     body.dark {
                         background: #1e1e1e;
                         color: #e0e0e0;
@@ -241,32 +229,27 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
                         color: #e0e0e0;
                     }
 
-                    /* Header tabel */
                     body.dark th {
                         background: #333;
                         color: #fff;
                     }
 
-                    /* Border tabel di mode gelap */
                     body.dark td,
                     body.dark th {
                         border-color: #444;
                     }
 
-                    /* Tombol aksi tetap terbaca */
                     body.dark .btn-edit,
                     body.dark .btn-hapus,
                     body.dark .btn-back {
                         filter: brightness(1.2);
                     }
 
-                    /* Progress bar text info */
                     body.dark .info-text {
                         color: #ccc;
                     }
                 </style>
 
-                <!-- SCRIPT DARK MODE -->
                 <script>
                     const body = document.body;
                     const toggleBtn = document.getElementById("darkToggle");
