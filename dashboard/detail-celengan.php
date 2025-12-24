@@ -93,6 +93,7 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             background-color: #f0f2f5;
             margin: 0;
             padding: 0;
+            color: #333;
         }
 
         .container {
@@ -206,11 +207,6 @@ $transaksi = $stmt_transaksi->fetchAll(PDO::FETCH_ASSOC);
             <div id="darkToggle" style="cursor: pointer; font-size: 22px;">
                 <i id="themeIcon" class="bi bi-moon" style="font-size: 25px;"></i>
                 <style>
-                    body {
-                        color: #333;
-                        background-color: #f0f2f5;
-                    }
-
                     body.dark {
                         background: #1e1e1e;
                         color: #e0e0e0;
