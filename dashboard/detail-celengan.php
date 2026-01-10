@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once('../config/auth_check.php');
 include('../config/db.php');
 
 if (!isset($_GET['id'])) {
@@ -120,12 +116,38 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
             min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 92, 246, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.2), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark::before {
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15), transparent 50%);
         }
 
         .container {
@@ -133,6 +155,8 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             box-sizing: border-box;
             margin: 0 auto;
             padding: 40px 20%;
+            position: relative;
+            z-index: 1;
         }
 
         @media (max-width: 1600px) {
@@ -180,16 +204,41 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         /* Cards */
         .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-md);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.2),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
             margin-bottom: 24px;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
-        h2 { margin: 0 0 8px 0; font-size: 24px; font-weight: 700; }
-        h3 { font-size: 18px; font-weight: 600; margin: 30px 0 16px 0; }
+        body.dark .card {
+            background: rgba(31, 41, 55, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h2 { 
+            margin: 0 0 8px 0; 
+            font-size: 24px; 
+            font-weight: 800;
+            color: #1F2937;
+        }
+        
+        h3 { 
+            font-size: 18px; 
+            font-weight: 700; 
+            margin: 30px 0 16px 0;
+            color: #1F2937;
+        }
+
+        body.dark h2,
+        body.dark h3 {
+            color: #F3F4F6;
+        }
 
         /* Action Buttons */
         .action-bar {
@@ -250,13 +299,47 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         }
         
         .stat-item {
-            background: rgba(128, 128, 128, 0.05);
-            padding: 16px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.2),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
-        .stat-value { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px 0 rgba(31, 38, 135, 0.25),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+        }
+
+        body.dark .stat-item {
+            background: rgba(31, 41, 55, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label { 
+            font-size: 13px; 
+            color: #4B5563;
+            margin-bottom: 6px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value { 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: #1F2937;
+        }
+
+        body.dark .stat-label { color: rgba(255, 255, 255, 0.8); font-weight: 500; }
+        body.dark .stat-value { color: #F3F4F6; }
 
         /* Progress Bar */
         .progress-container {
