@@ -393,6 +393,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     <div class="stat-value" style="color: #EF4444;" id="valKekurangan"><?= rupiah($kekurangan); ?></div>
                 </div>
                 <div class="stat-item">
+                    <div class="stat-label">Pertumbuhan (View)</div>
+                    <div class="stat-value" id="valGrowth">-</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-label">Progress</div>
                     <div class="stat-value" id="valProgress"><?= $progress; ?>%</div>
                 </div>
@@ -499,19 +503,23 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     <button class="btn-filter active" id="btnBatang" title="Grafik Batang"><i class="bi bi-bar-chart"></i></button>
                     <button class="btn-filter" id="btnGaris" title="Grafik Garis"><i class="bi bi-graph-up"></i></button>
                     <button class="btn-filter" onclick="resetScale()" title="Reset Zoom"><i class="bi bi-arrows-move"></i></button>
+                    <button class="btn-filter active" id="btnAutoFit" title="Auto Fit Y-Axis"><i class="bi bi-lock-fill"></i></button>
                 </div>
             </div>
             
             <div class="range-group" style="margin-bottom: 20px; justify-content: center;">
                 <!-- Buttons injected by JS or static -->
+                <button class="btn-range" data-range="1D">1 Hari</button>
                 <button class="btn-range" data-range="1W">1 Minggu</button>
                 <button class="btn-range" data-range="1M">1 Bulan</button>
                 <button class="btn-range" data-range="3M">3 Bulan</button>
+                <button class="btn-range" data-range="6M">6 Bulan</button>
+                <button class="btn-range" data-range="9M">9 Bulan</button>
                 <button class="btn-range" data-range="1Y">1 Tahun</button>
                 <button class="btn-range active" data-range="ALL">Semua</button>
             </div>
 
-            <div style="position: relative; height: 350px; width: 100%;">
+            <div style="position: relative; height: 550px; width: 100%;">
                 <canvas id="chartTransaksi"></canvas>
             </div>
         </div>
@@ -563,8 +571,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         
         let chart;
         let currentType = 'bar'; // default
-        // Hapus currentRange yang bersifat global, kita main index
-        // Hapus currentRange yang bersifat global, kita main index
+        let isAutoFit = true; // State untuk Auto Fit Y-Axis
         
         function toDate(str) {
             const [y, m, d] = str.split('-').map(Number);
@@ -581,9 +588,12 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             const now = new Date();
             let startDate;
 
-            if (range === '1W') startDate = new Date(now.setDate(now.getDate() - 7));
+            if (range === '1D') startDate = new Date(now.setDate(now.getDate() - 1));
+            else if (range === '1W') startDate = new Date(now.setDate(now.getDate() - 7));
             else if (range === '1M') startDate = new Date(now.setMonth(now.getMonth() - 1));
             else if (range === '3M') startDate = new Date(now.setMonth(now.getMonth() - 3));
+            else if (range === '6M') startDate = new Date(now.setMonth(now.getMonth() - 6));
+            else if (range === '9M') startDate = new Date(now.setMonth(now.getMonth() - 9));
             else if (range === '1Y') startDate = new Date(now.setFullYear(now.getFullYear() - 1));
             else return 0; // ALL
 
@@ -661,31 +671,99 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById('valProgress').innerText = prog + '%';
             document.getElementById('barProgress').style.width = prog + '%';
 
-            // 2. UPDATE Y-AXIS SCALE ("Memulai dari bawah")
-            // Gunakan padding sangat kecil agar "nempel" di bawah tapi tidak terpotong stroke-nya
-            const padding = (visibleMax - visibleMin) * 0.02; // 2% padding
-            
-            // Set scale min/max
-            chart.options.scales.y.min = visibleMin - padding;
-            chart.options.scales.y.max = visibleMax + padding;
-            
-            // Jika nilai sangat dekat dengan 0 (misal awal nabung), bisa dipaksa ke 0 agar rapi
-            if (chart.options.scales.y.min < 0) chart.options.scales.y.min = 0;
+            // Update Pertumbuhan (Net Change in View)
+            if (rawSaldoAwal && rawSaldoAkhir) {
+                let startBal = rawSaldoAwal[startIndex];
+                let endBal = rawSaldoAkhir[endIndex];
+                let growth = endBal - startBal;
+                
+                let pct = 0;
+                if (startBal !== 0) {
+                    pct = (growth / startBal) * 100;
+                } else if (growth > 0) {
+                    pct = 100; // Asumsi 100% jika mulai dari 0
+                }
+                
+                let elGrowth = document.getElementById('valGrowth');
+                if(elGrowth) {
+                    let sign = growth >= 0 ? '+' : '';
+                    // Tampilkan: +Rp 100.000 (10.5%)
+                    elGrowth.innerText = `${sign}${formatRupiah(growth)} (${pct.toFixed(1)}%)`;
+                    elGrowth.style.color = (growth >= 0) ? '#10B981' : '#EF4444';
+                }
+            }
 
-            // PENTING: Force update agar scale diterapkan visualnya
-            chart.update('none');
+            // 2. UPDATE Y-AXIS SCALE
+            // Hanya jalankan logika "Left at bottom" jika Auto Fit AKTIF
+            if (isAutoFit) {
+                // User Request: "The one on the left should always be at the bottom"
+                // User Request: "Tidak terpotong tapi tetap dimulai dari bawah"
+                // Solusi: Gunakan nilai TERENDAH dari seluruh view (visibleMin) sebagai anchor.
+                // Ini memastikan:
+                // 1. Data drop (red bar) tidak terpotong (karena min mengikuti dia).
+                // 2. Tampilan tetap tight ("mulai dari bawah") karena tidak ada padding berlebih.
+                
+                // Gunakan visibleMin, dan pastikan tidak minus di bawah 0
+                let floor = visibleMin;
+                
+                // Opsional: Sedikit padding bawah agar stroke tidak kepotong (misal Rp 1.000 atau 0)
+                // Kita set ke floor langsung agar "nempel" sesuai request sebelumnya, 
+                // chart.js biasanya handle stroke well enough.
+                
+                chart.options.scales.y.min = floor; 
+                chart.options.scales.y.max = visibleMax + 2000000;
+                
+                if (chart.options.scales.y.min < 0) chart.options.scales.y.min = 0;
+
+                // PENTING: Force update agar scale diterapkan visualnya
+                chart.update('none');
+            }
         }
 
         // Fungsi Reset Zoom & Stats
         function resetScale() {
             if(!chart) return;
             chart.resetZoom();
+            
+            // Reset ke mode Auto Fit
+            isAutoFit = true;
+            document.getElementById('btnAutoFit').classList.add('active');
+            document.getElementById('btnAutoFit').innerHTML = '<i class="bi bi-lock-fill"></i>';
+            chart.options.plugins.zoom.pan.mode = 'x'; // Lock Y back
+            
             chart.options.scales.y.min = undefined; // Reset ke auto
             chart.options.scales.y.max = undefined;
             chart.update();
             
             // Kembalikan stats ke nilai akhir asli (global)
             // (Sebenarnya syncStatsAndView akan dipanggil saat reset zoom juga oleh plugin, tapi kita paksa update chart dulu)
+        }
+        
+        // Fungsi Toggle Auto Fit
+        function toggleAutoFit() {
+            isAutoFit = !isAutoFit;
+            const btn = document.getElementById('btnAutoFit');
+            
+            if (isAutoFit) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="bi bi-lock-fill"></i>';
+                btn.title = "Auto Fit ON (Locked Y)";
+                
+                if(chart) {
+                    chart.options.plugins.zoom.pan.mode = 'x'; 
+                    chart.update(); // Update config
+                    syncStatsAndView({chart}); 
+                }
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="bi bi-unlock-fill"></i>';
+                btn.title = "Free Move (Unlocked)";
+                
+                if(chart) {
+                    chart.options.plugins.zoom.pan.mode = 'xy';
+                    chart.update(); // Update config enabling XY
+                }
+            }
         }
 
         function createGradient(ctx, colorStart, colorEnd) {
@@ -722,7 +800,8 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
                     backgroundColor: rawColors,
                     borderRadius: 4,
-                    barPercentage: 0.6
+                    barPercentage: 0.96,
+                    categoryPercentage: 0.96
                 }];
             } else {
                 datasets = [{
@@ -743,6 +822,12 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             // Tentukan min/max index awal
             const startIndex = getStartIndexForRange(initialRange);
             const maxIndex = rawLabels.length - 1;
+            
+            // Hitung Global Max untuk Limit Atas Chart
+            // Gabungkan semua kemungkinan nilai tinggi
+            let allValues = [...rawSaldoAwal, ...rawSaldoAkhir];
+            let globalMax = Math.max(...allValues);
+            if (!isFinite(globalMax)) globalMax = 0;
 
             chart = new Chart(ctx, {
                 type: currentType,
@@ -778,17 +863,18 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                         },
                         zoom: {
                             limits: {
-                                x: {min: 0, max: maxIndex} // Batas scroll tidak boleh lewat data
+                                x: {min: 0, max: maxIndex}, 
+                                y: {min: 0, max: globalMax + 2000000} // Batas atas (Limits) = ATH + 2 Juta
                             },
                             zoom: {
-                                wheel: { enabled: true, speed: 0.1 }, // Haluskan speed zoom
+                                wheel: { enabled: true, speed: 0.1 }, 
                                 pinch: { enabled: true },
                                 mode: 'x',
                                 onZoom: syncStatsAndView
                             },
                             pan: { 
                                 enabled: true, 
-                                mode: 'x',
+                                mode: 'x', // Default X only (Auto Fit ON)
                                 threshold: 0, // Langsung response saat didrag
                                 onPan: syncStatsAndView 
                             }
@@ -844,6 +930,8 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             const activeRangeBtn = document.querySelector('.btn-range.active');
             updateChart(activeRangeBtn ? activeRangeBtn.dataset.range : 'ALL');
         });
+        
+        document.getElementById('btnAutoFit').addEventListener('click', toggleAutoFit);
 
         // Range Buttons: Kini hanya mengubah Scale
         document.querySelectorAll('.btn-range').forEach(btn => {
