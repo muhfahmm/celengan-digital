@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'celengan_db';
+$dbname = 'db_celengan';
 $username = 'root';
 $password = '';
 
