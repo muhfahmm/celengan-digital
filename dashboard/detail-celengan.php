@@ -287,7 +287,15 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         .btn-edit { background: #3B82F6; color: white; padding: 6px 12px; font-size: 13px; border-radius: 6px; }
         .btn-edit:hover { background: #2563EB; }
 
-        .btn-delete { background: #EF4444; color: white; padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+        .btn-delete { 
+            background: #EF4444; 
+            color: white; 
+            padding: 6px 12px; 
+            font-size: 13px; 
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
         .btn-delete:hover { background: #DC2626; }
 
         /* Stats Grid */
@@ -426,6 +434,159 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         .range-group { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
 
+        /* Delete Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.3),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            animation: slideUp 0.3s ease;
+        }
+
+        body.dark .modal-content {
+            background: rgba(31, 41, 55, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #EF4444;
+        }
+
+        body.dark .modal-icon {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+
+        body.dark .modal-header h3 {
+            color: #F3F4F6;
+        }
+
+        .modal-header p {
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        body.dark .modal-header p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-cancel,
+        .btn-modal-delete {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: block;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: rgba(0, 0, 0, 0.05);
+            color: #4B5563;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        body.dark .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-modal-delete {
+            background: #EF4444;
+            color: white;
+            border: 1px solid #EF4444;
+        }
+
+        .btn-modal-delete:hover {
+            background: #DC2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Responsive */
         @media (max-width: 640px) {
             .container { padding: 20px 16px; }
@@ -504,10 +665,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-edit">
                         <i class="bi bi-pencil-square"></i> Edit
                     </a>
-                    <a href="../data-celengan/hapus-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-delete" 
-                       onclick="return confirm('Yakin ingin menghapus celengan ini? Semua data transaksi juga akan terhapus.')">
+                    <button class="btn btn-delete" 
+                       onclick="openDeleteModal(<?= $celengan['id']; ?>, '<?= htmlspecialchars($celengan['nama_celengan'], ENT_QUOTES); ?>')">
                         <i class="bi bi-trash"></i> Hapus
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -604,6 +765,23 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
             <div style="position: relative; height: 550px; width: 100%;">
                 <canvas id="chartTransaksi"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h3>Hapus Celengan?</h3>
+                <p id="modalMessage">Yakin ingin menghapus celengan ini? Semua data transaksi juga akan terhapus.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Batal</button>
+                <a id="confirmDeleteBtn" href="#" class="btn-modal-delete">Hapus</a>
             </div>
         </div>
     </div>
@@ -1069,6 +1247,37 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             });
         });
         observer.observe(document.body, { attributes: true });
+
+        // Delete Modal Functions
+        function openDeleteModal(id, name) {
+            const modal = document.getElementById('deleteModal');
+            const message = document.getElementById('modalMessage');
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            
+            message.textContent = `Yakin ingin menghapus celengan "${name}"? Semua data transaksi juga akan terhapus.`;
+            confirmBtn.href = `../data-celengan/hapus-celengan.php?id=${id}`;
+            
+            modal.classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
 
     </script>
 </body>
