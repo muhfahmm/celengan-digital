@@ -367,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     name="nominal" 
                     placeholder="Contoh: 50000"
                     min="1"
-                    step="1000"
+                    step="1"
                     required
                 >
             </div>

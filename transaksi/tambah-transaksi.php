@@ -339,7 +339,7 @@ if (!$celengan) {
                     name="nominal" 
                     placeholder="Contoh: 50000"
                     min="1"
-                    step="1000"
+                    step="1"
                     required
                 >
             </div>

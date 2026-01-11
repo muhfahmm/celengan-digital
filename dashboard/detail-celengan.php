@@ -599,7 +599,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 <button class="btn-range" data-range="6M">6 Bulan</button>
                 <button class="btn-range" data-range="9M">9 Bulan</button>
                 <button class="btn-range" data-range="1Y">1 Tahun</button>
-                <button class="btn-range active" data-range="ALL">Semua</button>
+                <button class="btn-range" data-range="ALL">Semua</button>
             </div>
 
             <div style="position: relative; height: 550px; width: 100%;">
@@ -1023,6 +1023,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 this.classList.add('active');
                 
                 const range = this.dataset.range;
+                
+                // Simpan pilihan ke localStorage
+                localStorage.setItem('chartRange', range);
+                
                 const newStart = getStartIndexForRange(range);
                 const maxIdx = rawLabels.length - 1;
 
@@ -1041,8 +1045,20 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             });
         });
 
-        // Initial Render
-        updateChart('ALL');
+        // Muat pilihan rentang waktu dari localStorage
+        const savedRange = localStorage.getItem('chartRange') || 'ALL';
+        
+        // Set tombol aktif sesuai pilihan tersimpan
+        document.querySelectorAll('.btn-range').forEach(btn => {
+            if (btn.dataset.range === savedRange) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Initial Render dengan pilihan tersimpan
+        updateChart(savedRange);
 
         // Dark Mode Chart Update Listener
         const observer = new MutationObserver(function(mutations) {
