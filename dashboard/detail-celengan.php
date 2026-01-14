@@ -416,23 +416,79 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .btn-filter, .btn-range {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             padding: 6px 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-filter:hover, .btn-range:hover, .btn-filter.active, .btn-range.active {
-            background: var(--primary-color);
-            color: white;
+        body.dark .btn-filter, 
+        body.dark .btn-range {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-filter:hover, .btn-range:hover {
+            background: rgba(59, 130, 246, 0.1);
             border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-filter.active, .btn-range.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            font-weight: 600;
+            transform: scale(1.05);
+            box-shadow: 
+                0 4px 12px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark .btn-filter:hover,
+        body.dark .btn-range:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        body.dark .btn-filter.active,
+        body.dark .btn-range.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 
+                0 4px 12px rgba(102, 126, 234, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .range-group { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+
+        /* Pagination Wrapper */
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        body.dark .pagination-wrapper {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
 
         /* Delete Modal Styles */
         .modal-overlay {
@@ -724,13 +780,16 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     </table>
                 </div>
 
+
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 4px;">
+                    <div class="pagination-wrapper">
                         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <?php $isActive = ($i === $page); ?>
                             <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>" 
-                               class="btn-range <?= $i == $page ? 'active' : '' ?>"
-                               style="text-decoration: none;">
+                               class="btn-range <?= $isActive ? 'active' : '' ?>"
+                               style="text-decoration: none;"
+                               title="Halaman <?= $i ?><?= $isActive ? ' (Aktif)' : '' ?>">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
