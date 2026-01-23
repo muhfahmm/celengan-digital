@@ -12,29 +12,19 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
-import { authService } from '../../services/authService';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
-    const handleLogin = async () => {
-        try {
-            const response = await authService.login(username, password);
-            if (response.status === 'success') {
-                await authService.setSession(response);
-                router.replace('/(tabs)');
-            } else {
-                alert(response.message || 'Login gagal!');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Terjadi kesalahan koneksi');
-        }
+    const handleRegister = () => {
+        // Implementasi register nanti
+        console.log('Register with:', username, password);
     };
 
     return (
@@ -45,11 +35,11 @@ export default function LoginScreen() {
             <View style={[styles.glassCard, isDark && styles.glassCardDark]}>
                 <View style={styles.header}>
                     <View style={styles.logo}>
-                        <FontAwesome6 name="piggy-bank" size={40} color="white" />
+                        <Ionicons name="person-add" size={40} color="white" />
                     </View>
-                    <Text style={[styles.title, isDark && styles.titleDark]}>Selamat Datang</Text>
+                    <Text style={[styles.title, isDark && styles.titleDark]}>Buat Akun Baru</Text>
                     <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-                        Masuk ke akun Celengan Digital Anda
+                        Daftar untuk mulai menabung digital
                     </Text>
                 </View>
 
@@ -60,7 +50,7 @@ export default function LoginScreen() {
                             <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
                             <TextInput
                                 style={[styles.input, isDark && styles.inputDark]}
-                                placeholder="Masukkan username"
+                                placeholder="Nama pengguna"
                                 placeholderTextColor="#9CA3AF"
                                 value={username}
                                 onChangeText={setUsername}
@@ -75,7 +65,7 @@ export default function LoginScreen() {
                             <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
                             <TextInput
                                 style={[styles.input, isDark && styles.inputDark]}
-                                placeholder="Masukkan password"
+                                placeholder="Minimal 6 karakter"
                                 placeholderTextColor="#9CA3AF"
                                 value={password}
                                 onChangeText={setPassword}
@@ -84,17 +74,32 @@ export default function LoginScreen() {
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                        <Ionicons name="log-in-outline" size={22} color="white" style={{ marginRight: 8 }} />
-                        <Text style={styles.buttonText}>Masuk</Text>
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, isDark && styles.labelDark]}>Konfirmasi Password</Text>
+                        <View style={[styles.inputWrapper, isDark && styles.inputWrapperDark]}>
+                            <Ionicons name="shield-checkmark-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                            <TextInput
+                                style={[styles.input, isDark && styles.inputDark]}
+                                placeholder="Ulangi password"
+                                placeholderTextColor="#9CA3AF"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry
+                            />
+                        </View>
+                    </View>
+
+                    <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                        <Ionicons name="checkmark-done-circle-outline" size={22} color="white" style={{ marginRight: 8 }} />
+                        <Text style={styles.buttonText}>Daftar Sekarang</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.footer}>
                     <Text style={[styles.footerText, isDark && styles.footerTextDark]}>
-                        Belum punya akun?{' '}
-                        <Link href="/(auth)/register" asChild>
-                            <Text style={styles.link}>Daftar Sekarang</Text>
+                        Sudah punya akun?{' '}
+                        <Link href="/auth/login" asChild>
+                            <Text style={styles.link}>Masuk Di Sini</Text>
                         </Link>
                     </Text>
                 </View>
@@ -161,7 +166,7 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.7)',
     },
     form: {
-        gap: 20,
+        gap: 15,
     },
     inputGroup: {
         gap: 8,

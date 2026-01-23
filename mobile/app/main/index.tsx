@@ -3,6 +3,7 @@ import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { authService } from '../../services/authService';
+import { celenganService } from '../../services/celenganService';
 import { useRouter } from 'expo-router';
 
 export default function Dashboard() {
@@ -10,9 +11,12 @@ export default function Dashboard() {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const [username, setUsername] = useState('User');
+    const [summary, setSummary] = useState({ total_tabungan: 0, total_target: 0 });
+    const [pinnedCelengan, setPinnedCelengan] = useState<any[]>([]);
 
     useEffect(() => {
         loadUser();
+        loadData();
     }, []);
 
     const loadUser = async () => {
@@ -21,6 +25,27 @@ export default function Dashboard() {
             setUsername(session.user.username);
         }
     };
+
+    const loadData = async () => {
+        try {
+            const data = await celenganService.getList();
+            if (data.status === 'success') {
+                setSummary(data.summary);
+                // Filter only pinned or take top 3 if none pinned (logic can be adjusted)
+                const pinned = data.data.filter(c => c.is_pinned == 1);
+                // If no pinned, take first 3 from all
+                setPinnedCelengan(pinned.length > 0 ? pinned : data.data.slice(0, 3));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
+    };
+
+    const progress = summary.total_target > 0 ? (summary.total_tabungan / summary.total_target) * 100 : 0;
 
     return (
         <ScrollView
@@ -39,11 +64,13 @@ export default function Dashboard() {
 
             <View style={[styles.card, isDark && styles.cardDark]}>
                 <Text style={[styles.cardLabel, isDark && styles.cardLabelDark]}>Total Tabungan</Text>
-                <Text style={[styles.cardValue, isDark && styles.cardValueDark]}>Rp 2.500.000</Text>
-                <Text style={[styles.cardSubtext, isDark && styles.cardSubtextDark]}>Target: Rp 5.000.000 (50%)</Text>
+                <Text style={[styles.cardValue, isDark && styles.cardValueDark]}>{formatCurrency(summary.total_tabungan)}</Text>
+                <Text style={[styles.cardSubtext, isDark && styles.cardSubtextDark]}>
+                    Target: {formatCurrency(summary.total_target)} ({progress.toFixed(1)}%)
+                </Text>
 
                 <View style={styles.progressBarBg}>
-                    <View style={[styles.progressBarFill, { width: '50%' }]} />
+                    <View style={[styles.progressBarFill, { width: `${Math.min(progress, 100)}%` }]} />
                 </View>
             </View>
 
@@ -51,17 +78,26 @@ export default function Dashboard() {
                 <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Celengan Favorit</Text>
             </View>
 
-            {/* Placeholder content */}
-            <View style={[styles.glassCard, isDark && styles.glassCardDark]}>
-                <View style={styles.celenganIcon}>
-                    <Ionicons name="car" size={24} color="white" />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Text style={[styles.celenganTitle, isDark && styles.celenganTitleDark]}>Beli Mobil</Text>
-                    <Text style={[styles.celenganSubtitle, isDark && styles.celenganSubtitleDark]}>Rp 1.000.000 / Rp 100.000.000</Text>
-                </View>
-            </View>
-
+            {pinnedCelengan.length === 0 ? (
+                <Text style={{ textAlign: 'center', color: isDark ? '#9CA3AF' : '#6B7280', marginTop: 20 }}>Belum ada celengan.</Text>
+            ) : (
+                pinnedCelengan.map((item) => (
+                    <TouchableOpacity key={item.id} style={[styles.glassCard, isDark && styles.glassCardDark]}>
+                        <View style={styles.celenganIcon}>
+                            <Ionicons name="gift" size={24} color="white" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.celenganTitle, isDark && styles.celenganTitleDark]}>{item.judul}</Text>
+                            <Text style={[styles.celenganSubtitle, isDark && styles.celenganSubtitleDark]}>
+                                {formatCurrency(item.total)} / {formatCurrency(item.target)}
+                            </Text>
+                        </View>
+                        {item.is_pinned == 1 && (
+                            <Ionicons name="pin" size={16} color={Colors.primary} />
+                        )}
+                    </TouchableOpacity>
+                ))
+            )}
         </ScrollView>
     );
 }
