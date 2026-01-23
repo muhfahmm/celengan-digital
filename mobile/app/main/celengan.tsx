@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, useColorScheme, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, useColorScheme, RefreshControl, ScrollView } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 import { celenganService, Celengan } from '../../services/celenganService';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function CelenganScreen() {
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
+    const [sortBy, setSortBy] = useState('newest'); // newest, progress, balance, target
     const [data, setData] = useState<Celengan[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -18,14 +20,42 @@ export default function CelenganScreen() {
         loadData();
     }, []);
 
+    const sortedData = React.useMemo(() => {
+        let sorted = [...data];
+        switch (sortBy) {
+            case 'newest':
+                sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                break;
+            case 'progress':
+                sorted.sort((a, b) => (b.total / b.target) - (a.total / a.target));
+                break;
+            case 'balance':
+                sorted.sort((a, b) => b.total - a.total);
+                break;
+            case 'target':
+                sorted.sort((a, b) => b.target - a.target);
+                break;
+        }
+        return sorted;
+    }, [data, sortBy]);
+
+    const sortOptions = [
+        { id: 'newest', label: 'Terbaru' },
+        { id: 'progress', label: 'Progress' },
+        { id: 'balance', label: 'Saldo Tertinggi' },
+        { id: 'target', label: 'Target Terbesar' },
+    ];
+
     const loadData = async () => {
         try {
-            const response = await celenganService.getList();
-            if (response.status === 'success') {
-                setData(response.data);
+            const result = await celenganService.getList();
+            // The service already returns response.data, which is the full object { status: 'success', data: [...], summary: {...} }
+            if (result.status === 'success') {
+                setData(result.data || []);
             }
         } catch (error) {
             console.error(error);
+            setData([]);
         } finally {
             setLoading(false);
         }
@@ -43,157 +73,261 @@ export default function CelenganScreen() {
 
     const renderItem = ({ item }: { item: Celengan }) => (
         <TouchableOpacity
-            style={[styles.card, isDark && styles.cardDark]}
-            onPress={() => console.log('Open detail', item.id)}
+            style={[styles.glassCard, isDark && styles.glassCardDark]}
+            onPress={() => router.push(`/celengan/${item.id}`)}
         >
             <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
-                    <FontAwesome6 name="gift" size={20} color="white" />
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(102, 126, 234, 0.2)' }]}>
+                    <FontAwesome6 name="gift" size={24} color="#667eea" />
                 </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Text style={[styles.cardTitle, isDark && styles.cardTitleDark]}>{item.judul}</Text>
-                        {item.is_pinned == 1 && <Ionicons name="pin" size={14} color={Colors.primary} />}
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={[styles.cardTitle, isDark && styles.cardTitleDark]}>{item.nama_celengan}</Text>
+                        {item.is_pinned == 1 && (
+                            <View style={styles.pinBadge}>
+                                <Ionicons name="pin" size={10} color={Colors.gold} />
+                                <Text style={styles.pinText}>PINNED</Text>
+                            </View>
+                        )}
                     </View>
                     <Text style={[styles.cardSubtitle, isDark && styles.cardSubtitleDark]}>
-                        Est. {item.estimasi_hari} hari
+                        Est. {item.estimasi_hari || 0} hari
                     </Text>
                 </View>
             </View>
 
             <View style={styles.progressContainer}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                     <Text style={[styles.progressText, isDark && styles.progressTextDark]}>{formatCurrency(item.total)}</Text>
                     <Text style={[styles.progressText, isDark && styles.progressTextDark]}>{formatCurrency(item.target)}</Text>
                 </View>
-                <View style={styles.progressBarBg}>
-                    <View style={[styles.progressBarFill, { width: `${Math.min((item.total / item.target) * 100, 100)}%` }]} />
+                <View style={[styles.progressBarBg, isDark && styles.progressBarBgDark]}>
+                    <LinearGradient
+                        colors={['#667eea', '#764ba2']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={[styles.progressBarFill, { width: `${Math.min((item.total / item.target) * 100, 100)}%` }]}
+                    />
                 </View>
             </View>
         </TouchableOpacity>
     );
 
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={isDark ? ['#1a1a2e', '#16213e'] : ['#667eea', '#764ba2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1 }}
+        >
             <View style={styles.header}>
                 <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>Daftar Celengan</Text>
                 <TouchableOpacity style={[styles.addButton, isDark && styles.addButtonDark]}>
-                    <Ionicons name="add" size={24} color="white" />
+                    <Ionicons name="add" size={24} color={Colors.primary} />
                 </TouchableOpacity>
             </View>
 
+            <View style={styles.filterContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterContent}>
+                    {sortOptions.map((option) => (
+                        <TouchableOpacity
+                            key={option.id}
+                            style={[
+                                styles.filterChip,
+                                sortBy === option.id && styles.filterChipActive,
+                                isDark && styles.filterChipDark,
+                                sortBy === option.id && isDark && styles.filterChipActiveDark
+                            ]}
+                            onPress={() => setSortBy(option.id)}
+                        >
+                            <Text style={[
+                                styles.filterText,
+                                sortBy === option.id && styles.filterTextActive,
+                                isDark && styles.filterTextDark,
+                                sortBy === option.id && isDark && styles.filterTextActiveDark
+                            ]}>
+                                {option.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+
             <FlatList
-                data={data}
+                data={sortedData}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? 'white' : Colors.primary} />
                 }
                 ListEmptyComponent={
                     !loading ? (
                         <View style={styles.emptyState}>
-                            <Ionicons name="documents-outline" size={48} color="#9CA3AF" />
-                            <Text style={styles.emptyText}>Belum ada celengan</Text>
-                            <Text style={styles.emptySubtext}>Mulai menabung dengan membuat celengan baru</Text>
+                            <Ionicons name="documents-outline" size={64} color={isDark ? "#374151" : "#9CA3AF"} />
+                            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>Belum ada celengan</Text>
+                            <Text style={[styles.emptySubtext, isDark && styles.emptySubtextDark]}>Mulai menabung dengan membuat celengan baru</Text>
                         </View>
                     ) : null
                 }
             />
-        </View>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
     header: {
         paddingTop: 60,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
+        paddingHorizontal: 24,
+        paddingBottom: 24,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: '800',
         color: Colors.text,
+        letterSpacing: -0.5,
     },
     headerTitleDark: {
         color: 'white',
     },
     addButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: Colors.primary,
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: Colors.glass,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
+        borderWidth: 1,
+        borderColor: Colors.border,
     },
     addButtonDark: {
-        shadowOpacity: 0.5,
+        backgroundColor: Colors.glassDark,
+        borderColor: Colors.borderDark,
     },
     listContent: {
-        padding: 20,
+        padding: 24,
         paddingTop: 0,
-        gap: 16,
+        gap: 20,
+        paddingBottom: 100,
     },
-    card: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    filterContainer: {
+        marginBottom: 16,
+    },
+    filterContent: {
+        paddingHorizontal: 24,
+        gap: 12,
+        paddingBottom: 8,
+    },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: Colors.glass,
         borderRadius: 20,
-        padding: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.6)',
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 3,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    cardDark: {
-        backgroundColor: 'rgba(31, 41, 55, 0.6)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+    filterChipDark: {
+        backgroundColor: Colors.glassDark,
+        borderColor: Colors.borderDark,
+    },
+    filterChipActive: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+        borderWidth: 0,
+    },
+    filterChipActiveDark: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+    },
+    filterText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: Colors.textSecondary,
+    },
+    filterTextDark: {
+        color: Colors.textSecondaryDark,
+    },
+    filterTextActive: {
+        color: 'white',
+        fontWeight: '700',
+    },
+    filterTextActiveDark: {
+        color: 'white',
+    },
+    glassCard: {
+        backgroundColor: Colors.glass,
+        borderRadius: 24,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        shadowColor: '#1f2687',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 24,
+        elevation: 8,
+    },
+    glassCardDark: {
+        backgroundColor: Colors.glassDark,
+        borderColor: Colors.borderDark,
+        shadowColor: 'black',
+        shadowOpacity: 0.3,
     },
     cardHeader: {
         flexDirection: 'row',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     iconContainer: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        backgroundColor: Colors.primary,
+        width: 56,
+        height: 56,
+        borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
     },
     cardTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '700',
         color: Colors.text,
+        letterSpacing: -0.5,
     },
     cardTitleDark: {
         color: 'white',
     },
+    pinBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+        gap: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(245, 158, 11, 0.3)',
+    },
+    pinText: {
+        color: Colors.gold,
+        fontSize: 10,
+        fontWeight: '800',
+        letterSpacing: 0.5,
+    },
     cardSubtitle: {
-        fontSize: 13,
+        fontSize: 14,
         color: Colors.textSecondary,
-        marginTop: 2,
+        marginTop: 4,
+        fontWeight: '500',
     },
     cardSubtitleDark: {
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: Colors.textSecondaryDark,
     },
     progressContainer: {
         marginTop: 4,
     },
     progressText: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
         color: Colors.text,
     },
@@ -201,30 +335,39 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     progressBarBg: {
-        height: 8,
+        height: 10,
         backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        borderRadius: 4,
+        borderRadius: 10,
         overflow: 'hidden',
+    },
+    progressBarBgDark: {
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: Colors.success,
-        borderRadius: 4,
+        borderRadius: 10,
     },
     emptyState: {
         alignItems: 'center',
         justifyContent: 'center',
         paddingTop: 100,
-        gap: 12,
+        gap: 16,
     },
     emptyText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: Colors.textSecondary,
+        fontSize: 18,
+        fontWeight: '700',
+        color: Colors.text,
+    },
+    emptyTextDark: {
+        color: 'white',
     },
     emptySubtext: {
-        fontSize: 13,
-        color: '#9CA3AF',
+        fontSize: 14,
+        color: Colors.textSecondary,
         textAlign: 'center',
+        maxWidth: 250,
+    },
+    emptySubtextDark: {
+        color: Colors.textSecondaryDark,
     },
 });
