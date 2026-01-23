@@ -15,7 +15,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Celengan Digital</title>
+    <title>Daftar - Celengan Digital</title>
     
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -180,6 +180,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             font-size: 18px;
         }
 
+        input[type="text"],
         input[type="email"],
         input[type="password"] {
             width: 100%;
@@ -194,6 +195,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             font-weight: 500;
         }
 
+        body.dark input[type="text"],
         body.dark input[type="email"],
         body.dark input[type="password"] {
             background: rgba(255, 255, 255, 0.05);
@@ -201,6 +203,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             color: #F3F4F6;
         }
 
+        input[type="text"]:focus,
         input[type="email"]:focus,
         input[type="password"]:focus {
             outline: none;
@@ -209,6 +212,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
+        body.dark input[type="text"]:focus,
         body.dark input[type="email"]:focus,
         body.dark input[type="password"]:focus {
             background: rgba(255, 255, 255, 0.1);
@@ -331,10 +335,10 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
     <div class="form-container">
         <div class="header">
             <div class="logo">
-                <i class="bi bi-piggy-bank-fill"></i>
+                <i class="bi bi-person-plus-fill"></i>
             </div>
-            <h2>Selamat Datang</h2>
-            <p>Masuk ke akun Celengan Digital Anda</p>
+            <h2>Buat Akun Baru</h2>
+            <p>Daftar untuk mulai menabung digital</p>
         </div>
 
         <?php if ($error): ?>
@@ -344,22 +348,21 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             </div>
         <?php endif; ?>
 
-        <form action="api/proses-login.php" method="POST">
+        <form action="api/proses-register.php" method="POST">
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="username">Username</label>
                 <div class="input-wrapper">
-                    <i class="bi bi-envelope input-icon"></i>
+                    <i class="bi bi-person input-icon"></i>
                     <input 
-                        type="email" 
-                        id="email"
-                        name="email" 
-                        placeholder="nama@email.com"
+                        type="text" 
+                        id="username"
+                        name="username" 
+                        placeholder="Nama pengguna"
                         required
-                        autocomplete="email"
+                        autocomplete="username"
                     >
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="input-wrapper">
@@ -368,21 +371,22 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
                         type="password" 
                         id="password"
                         name="password" 
-                        placeholder="Masukkan password"
+                        placeholder="Minimal 6 karakter"
                         required
-                        autocomplete="current-password"
+                        autocomplete="new-password"
+                        minlength="6"
                     >
                 </div>
             </div>
 
             <button type="submit">
-                <i class="bi bi-box-arrow-in-right"></i>
-                <span>Masuk</span>
+                <i class="bi bi-person-check"></i>
+                <span>Daftar Sekarang</span>
             </button>
         </form>
 
         <p class="footer-text">
-            Belum punya akun? <a href="register.php">Daftar Sekarang</a>
+            Sudah punya akun? <a href="login.php">Masuk Di Sini</a>
         </p>
     </div>
 

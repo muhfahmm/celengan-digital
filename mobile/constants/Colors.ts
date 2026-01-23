@@ -1,0 +1,15 @@
+export const Colors = {
+    primary: '#667eea',
+    primaryHover: '#764ba2',
+    background: ['#667eea', '#764ba2'],
+    backgroundDark: ['#1a1a2e', '#16213e'],
+    text: '#1F2937',
+    textSecondary: '#6B7280',
+    white: '#FFFFFF',
+    glass: 'rgba(255, 255, 255, 0.95)',
+    glassDark: 'rgba(31, 41, 55, 0.4)',
+    border: 'rgba(255, 255, 255, 0.6)',
+    borderDark: 'rgba(255, 255, 255, 0.1)',
+    error: '#EF4444',
+    success: '#10B981',
+};

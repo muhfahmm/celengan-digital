@@ -1,7 +1,8 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: auth/login.php');
-    exit;
-}
-header('Location: dashboard/index.php');
+/**
+ * Celengan Digital - Root Entry Point
+ * Redirects to the web directory for the web application.
+ */
+
+header('Location: web/');
+exit;

@@ -74,47 +74,19 @@ Celengan Digital adalah aplikasi manajemen keuangan pribadi yang memungkinkan pe
 
 ```
 celengan-digital/
-├── auth/                      # Autentikasi
-│   ├── api/
-│   │   ├── proses-login.php
-│   │   └── proses-register.php
-│   ├── login.php
-│   ├── register.php
-│   └── logout.php
+├── web/                       # Aplikasi Web Utama
+│   ├── auth/                  # Autentikasi
+│   ├── config/                # Konfigurasi
+│   ├── dashboard/             # Dashboard utama
+│   ├── data-celengan/         # CRUD Celengan
+│   ├── transaksi/             # CRUD Transaksi
+│   ├── database/              # SQL Scripts
+│   ├── assets/                # Static files
+│   └── index.php              # Entry point aplikasi web
 │
-├── config/                    # Konfigurasi
-│   ├── db.php                # Database connection
-│   └── auth_check.php        # Authentication middleware
-│
-├── dashboard/                 # Dashboard utama
-│   ├── index.php             # Halaman dashboard
-│   └── detail-celengan.php   # Detail celengan & grafik
-│
-├── data-celengan/            # CRUD Celengan
-│   ├── api/
-│   │   ├── api-tambah-celengan.php
-│   │   ├── api-edit-celengan.php
-│   │   └── api-toggle-pin.php
-│   ├── tambah-celengan.php
-│   ├── edit-celengan.php
-│   └── hapus-celengan.php
-│
-├── transaksi/                # CRUD Transaksi
-│   ├── api/
-│   │   ├── api-tambah-transaksi.php
-│   │   └── api-edit-transaksi.php
-│   ├── tambah-transaksi.php
-│   ├── kurangi-transaksi.php
-│   ├── edit-transaksi.php
-│   └── hapus-transaksi.php
-│
-├── database/                 # SQL Scripts
-│   └── add_pin_feature.sql
-│
-├── assets/                   # Static files (jika ada)
-│
-├── index.php                 # Entry point
-└── README.md                 # Dokumentasi
+├── mobile/                    # Aplikasi Mobile (Coming Soon)
+├── md/                        # Dokumentasi Proyek
+└── index.php                  # Root redirector
 ```
 
 ## 🚀 Instalasi

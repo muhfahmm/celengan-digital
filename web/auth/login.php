@@ -7,15 +7,31 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Ambil error message jika ada
-$error = isset($_GET['error']) ? $_GET['error'] : '';
+// Tentukan pesan berdasarkan status/error
+$message = '';
+$messageType = '';
+
+if (isset($_GET['status'])) {
+    if ($_GET['status'] == 'failed') {
+        $message = 'Username atau password salah!';
+        $messageType = 'error';
+    } elseif ($_GET['status'] == 'success') {
+        $message = 'Akun berhasil dibuat! Silakan login.';
+        $messageType = 'success';
+    }
+}
+
+if (isset($_GET['error'])) {
+    $message = $_GET['error'];
+    $messageType = 'error';
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar - Celengan Digital</title>
+    <title>Login - Celengan Digital</title>
     
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -144,9 +160,28 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
             gap: 8px;
         }
 
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10B981;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         body.dark .error {
             background: rgba(239, 68, 68, 0.2);
             color: #FCA5A5;
+        }
+
+        body.dark .success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6EE7B7;
         }
 
         .form-group {
@@ -335,20 +370,20 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
     <div class="form-container">
         <div class="header">
             <div class="logo">
-                <i class="bi bi-person-plus-fill"></i>
+                <i class="bi bi-piggy-bank-fill"></i>
             </div>
-            <h2>Buat Akun Baru</h2>
-            <p>Daftar untuk mulai menabung digital</p>
+            <h2>Selamat Datang</h2>
+            <p>Masuk ke akun Celengan Digital Anda</p>
         </div>
 
-        <?php if ($error): ?>
-            <div class="error">
-                <i class="bi bi-exclamation-circle"></i>
-                <span><?= htmlspecialchars($error); ?></span>
+        <?php if ($message): ?>
+            <div class="<?= $messageType === 'success' ? 'success' : 'error' ?>">
+                <i class="bi <?= $messageType === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle' ?>"></i>
+                <span><?= htmlspecialchars($message); ?></span>
             </div>
         <?php endif; ?>
 
-        <form action="api/proses-register.php" method="POST">
+        <form action="api/proses-login.php" method="POST">
             <div class="form-group">
                 <label for="username">Username</label>
                 <div class="input-wrapper">
@@ -357,24 +392,9 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
                         type="text" 
                         id="username"
                         name="username" 
-                        placeholder="Nama pengguna"
+                        placeholder="Masukkan username"
                         required
                         autocomplete="username"
-                    >
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <div class="input-wrapper">
-                    <i class="bi bi-envelope input-icon"></i>
-                    <input 
-                        type="email" 
-                        id="email"
-                        name="email" 
-                        placeholder="nama@email.com"
-                        required
-                        autocomplete="email"
                     >
                 </div>
             </div>
@@ -387,22 +407,21 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
                         type="password" 
                         id="password"
                         name="password" 
-                        placeholder="Minimal 6 karakter"
+                        placeholder="Masukkan password"
                         required
-                        autocomplete="new-password"
-                        minlength="6"
+                        autocomplete="current-password"
                     >
                 </div>
             </div>
 
             <button type="submit">
-                <i class="bi bi-person-check"></i>
-                <span>Daftar Sekarang</span>
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>Masuk</span>
             </button>
         </form>
 
         <p class="footer-text">
-            Sudah punya akun? <a href="login.php">Masuk Di Sini</a>
+            Belum punya akun? <a href="register.php">Daftar Sekarang</a>
         </p>
     </div>
 
