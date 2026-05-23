@@ -464,7 +464,58 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
-        .range-group { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+        .range-group { 
+            display: flex; 
+            gap: 4px; 
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap; 
+            padding: 12px 0 8px; 
+            -webkit-overflow-scrolling: touch; 
+            justify-content: flex-start;
+            width: 100%;
+            scrollbar-width: thin; 
+            scrollbar-color: rgba(102, 126, 234, 0.3) transparent; 
+        }
+        .range-group::-webkit-scrollbar { height: 8px; }
+        .range-group::-webkit-scrollbar-track { background: transparent; }
+        .range-group::-webkit-scrollbar-thumb { background: rgba(102, 126, 234, 0.4); border-radius: 4px; }
+        .range-group::-webkit-scrollbar-thumb:hover { background: rgba(102, 126, 234, 0.6); }
+        .chart-range { flex: 0 0 auto; min-width: 40px; padding: 6px 6px; font-size: 11px; }
+        .chart-range .mobile-text { display: inline; }
+        .chart-range .desktop-text { display: none; }
+        @media (min-width: 768px) {
+            .range-group { gap: 8px; }
+            .chart-range { min-width: 100px; padding: 8px 14px; font-size: 13px; }
+            .chart-range .mobile-text { display: none; }
+            .chart-range .desktop-text { display: inline; }
+        }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .stat-item {
+            padding: 16px;
+            min-height: 92px;
+        }
 
         .editable-date {
             cursor: pointer;
@@ -826,16 +877,14 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
             
-            <div class="range-group" style="margin-bottom: 20px; justify-content: center;">
-                <!-- Buttons injected by JS or static -->
-                <button class="btn-range chart-range" data-range="1D">1 Hari</button>
-                <button class="btn-range chart-range" data-range="1W">1 Minggu</button>
-                <button class="btn-range chart-range" data-range="1M">1 Bulan</button>
-                <button class="btn-range chart-range" data-range="3M">3 Bulan</button>
-                <button class="btn-range chart-range" data-range="6M">6 Bulan</button>
-                <button class="btn-range chart-range" data-range="9M">9 Bulan</button>
-                <button class="btn-range chart-range" data-range="1Y">1 Tahun</button>
-                <button class="btn-range chart-range" data-range="ALL">Semua</button>
+            <div class="range-group" style="margin-bottom: 20px; justify-content: flex-start; width: calc(100% + 0px);">
+                <!-- Buttons with mobile abbreviations and desktop full text -->
+                <button class="btn-range chart-range" data-range="1D"><span class="mobile-text">1D</span><span class="desktop-text">1 Hari</span></button>
+                <button class="btn-range chart-range" data-range="1W"><span class="mobile-text">1W</span><span class="desktop-text">1 Minggu</span></button>
+                <button class="btn-range chart-range" data-range="1M"><span class="mobile-text">1M</span><span class="desktop-text">1 Bulan</span></button>
+
+                <button class="btn-range chart-range" data-range="1Y"><span class="mobile-text">1Y</span><span class="desktop-text">1 Tahun</span></button>
+                <button class="btn-range chart-range" data-range="ALL"><span class="mobile-text">ALL</span><span class="desktop-text">Semua</span></button>
             </div>
 
             <div style="position: relative; height: 550px; width: 100%;">
@@ -981,15 +1030,24 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             const growthEl = document.getElementById('valGrowth');
             const barProgress = document.getElementById('barProgress');
 
-            if (totalEl) totalEl.innerText = formatRupiah(0);
+            // Tampilkan total akhir dari semua raw data, bukan 0
+            const lastRawTotal = rawSaldoAkhir.length > 0 ? rawSaldoAkhir[rawSaldoAkhir.length - 1] : 0;
+
+            if (totalEl) totalEl.innerText = formatRupiah(lastRawTotal);
             if (athEl) athEl.innerText = formatRupiah(0);
-            if (kekEl) kekEl.innerText = formatRupiah(targetAmount);
-            if (progressEl) progressEl.innerText = '0%';
+            if (kekEl) kekEl.innerText = formatRupiah(targetAmount - lastRawTotal);
+            if (progressEl) {
+                let prog = (targetAmount > 0) ? Math.round((lastRawTotal / targetAmount) * 100) : 0;
+                progressEl.innerText = prog + '%';
+            }
             if (growthEl) {
-                growthEl.innerText = '0%';
+                growthEl.innerText = '-';
                 growthEl.style.color = '#6B7280';
             }
-            if (barProgress) barProgress.style.width = '0%';
+            if (barProgress) {
+                let prog = (targetAmount > 0) ? Math.round((lastRawTotal / targetAmount) * 100) : 0;
+                barProgress.style.width = prog + '%';
+            }
         }
 
         // --- Logic Update Statistik Berdasarkan View ---
