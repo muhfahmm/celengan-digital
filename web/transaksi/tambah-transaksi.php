@@ -233,7 +233,7 @@ if (!$celengan) {
         button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
             color: white;
             border: none;
             border-radius: 12px;

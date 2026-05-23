@@ -260,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         button {
             width: 100%;
             padding: 14px;
-            background: var(--danger-color);
+            background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
             color: white;
             border: none;
             border-radius: 12px;
