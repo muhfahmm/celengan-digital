@@ -809,18 +809,21 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="range-group" style="margin-bottom: 20px; justify-content: center;">
                 <!-- Buttons injected by JS or static -->
-                <button class="btn-range" data-range="1D">1 Hari</button>
-                <button class="btn-range" data-range="1W">1 Minggu</button>
-                <button class="btn-range" data-range="1M">1 Bulan</button>
-                <button class="btn-range" data-range="3M">3 Bulan</button>
-                <button class="btn-range" data-range="6M">6 Bulan</button>
-                <button class="btn-range" data-range="9M">9 Bulan</button>
-                <button class="btn-range" data-range="1Y">1 Tahun</button>
-                <button class="btn-range" data-range="ALL">Semua</button>
+                <button class="btn-range chart-range" data-range="1D">1 Hari</button>
+                <button class="btn-range chart-range" data-range="1W">1 Minggu</button>
+                <button class="btn-range chart-range" data-range="1M">1 Bulan</button>
+                <button class="btn-range chart-range" data-range="3M">3 Bulan</button>
+                <button class="btn-range chart-range" data-range="6M">6 Bulan</button>
+                <button class="btn-range chart-range" data-range="9M">9 Bulan</button>
+                <button class="btn-range chart-range" data-range="1Y">1 Tahun</button>
+                <button class="btn-range chart-range" data-range="ALL">Semua</button>
             </div>
 
             <div style="position: relative; height: 550px; width: 100%;">
                 <canvas id="chartTransaksi"></canvas>
+                <div id="chartEmptyMessage" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; color: #6B7280; font-size: 1rem; pointer-events:none;">
+                    Tidak ada pemasukan di rentang waktu ini.
+                </div>
             </div>
         </div>
     </div>
@@ -901,32 +904,89 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         }
 
         // --- Logic Cari Index Start berdasarkan Range Waktu ---
-        function getStartIndexForRange(range) {
+        function getRangeStartDate(range) {
             const now = new Date();
-            let startDate;
 
-            if (range === '1D') startDate = new Date(now.setDate(now.getDate() - 1));
-            else if (range === '1W') startDate = new Date(now.setDate(now.getDate() - 7));
-            else if (range === '1M') startDate = new Date(now.setMonth(now.getMonth() - 1));
-            else if (range === '3M') startDate = new Date(now.setMonth(now.getMonth() - 3));
-            else if (range === '6M') startDate = new Date(now.setMonth(now.getMonth() - 6));
-            else if (range === '9M') startDate = new Date(now.setMonth(now.getMonth() - 9));
-            else if (range === '1Y') startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-            else return 0; // ALL
+            if (range === '1D') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            if (range === '1W') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (range === '1M') return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            if (range === '3M') return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            if (range === '6M') return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+            if (range === '9M') return new Date(now.getFullYear(), now.getMonth() - 9, now.getDate());
+            if (range === '1Y') return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            return null; // ALL
+        }
 
-            // Cari index pertama dimana tanggal >= startDate
-            for(let i = 0; i < rawLabels.length; i++) {
-                if(toDate(rawLabels[i]) >= startDate) {
-                    return i;
+        function filterDataByRange(range) {
+            if (range === 'ALL') {
+                return {
+                    labels: rawLabels,
+                    saldoAwal: rawSaldoAwal,
+                    saldoAkhir: rawSaldoAkhir,
+                    colors: rawColors
+                };
+            }
+
+            const startDate = getRangeStartDate(range);
+            if (!startDate) {
+                return {
+                    labels: rawLabels,
+                    saldoAwal: rawSaldoAwal,
+                    saldoAkhir: rawSaldoAkhir,
+                    colors: rawColors
+                };
+            }
+
+            const labels = [];
+            const saldoAwal = [];
+            const saldoAkhir = [];
+            const colors = [];
+
+            for (let i = 0; i < rawLabels.length; i++) {
+                if (toDate(rawLabels[i]) >= startDate) {
+                    labels.push(rawLabels[i]);
+                    saldoAwal.push(rawSaldoAwal[i]);
+                    saldoAkhir.push(rawSaldoAkhir[i]);
+                    colors.push(rawColors[i]);
                 }
             }
-            return 0; // Fallback kalau tidak ketemu (misal data lama sekali)
+
+            return { labels, saldoAwal, saldoAkhir, colors };
+        }
+
+        function resetStatsForEmptyRange() {
+            const totalEl = document.getElementById('valTotal');
+            const athEl = document.getElementById('valATH');
+            const kekEl = document.getElementById('valKekurangan');
+            const progressEl = document.getElementById('valProgress');
+            const growthEl = document.getElementById('valGrowth');
+            const barProgress = document.getElementById('barProgress');
+
+            if (totalEl) totalEl.innerText = formatRupiah(0);
+            if (athEl) athEl.innerText = formatRupiah(0);
+            if (kekEl) kekEl.innerText = formatRupiah(targetAmount);
+            if (progressEl) progressEl.innerText = '0%';
+            if (growthEl) {
+                growthEl.innerText = '0%';
+                growthEl.style.color = '#6B7280';
+            }
+            if (barProgress) barProgress.style.width = '0%';
         }
 
         // --- Logic Update Statistik Berdasarkan View ---
         function syncStatsAndView({chart}) {
+            if (!chart || !chart.data || !chart.data.labels || chart.data.labels.length === 0) {
+                resetStatsForEmptyRange();
+                return;
+            }
+
             const xScale = chart.scales.x;
             const datasets = chart.data.datasets[0];
+            if (!datasets || !datasets.data || datasets.data.length === 0) {
+                resetStatsForEmptyRange();
+                return;
+            }
+
             const dataPoints = datasets.data;
             const labels = chart.data.labels;
 
@@ -1095,61 +1155,71 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         function updateChart(initialRange = 'ALL') {
             if (!ctx) return; // Prevent error if canvas not found
             if (chart) chart.destroy();
-            
-            // Check empty data
-            if (!rawLabels || rawLabels.length === 0) {
-                // Render empty state or just return
-                return; 
+
+            const { labels, saldoAwal, saldoAkhir, colors } = filterDataByRange(initialRange);
+            const hasData = labels && labels.length > 0;
+
+            const chartEmptyMessage = document.getElementById('chartEmptyMessage');
+            if (chartEmptyMessage) {
+                chartEmptyMessage.style.display = hasData ? 'none' : 'block';
             }
-            
+
+            if (!hasData) {
+                resetStatsForEmptyRange();
+            }
+
+            if (!rawLabels || rawLabels.length === 0) {
+                return;
+            }
+
             const isDark = document.body.classList.contains('dark');
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
             const textColor = isDark ? '#9CA3AF' : '#6B7280';
 
-            // Gunakan SEMUA data raw
-            // Kita akan atur Viewport (min/max) di options.scales.x nanti
-            
             let datasets = [];
-            
-            if (currentType === 'bar') {
-                datasets = [{
-                    label: 'Perubahan Saldo',
-                    data: rawSaldoAwal.map((v, i) => [v, rawSaldoAkhir[i]]),
-                    backgroundColor: rawColors,
-                    borderRadius: 4,
-                    barPercentage: 0.96,
-                    categoryPercentage: 0.96
-                }];
-            } else {
-                datasets = [{
-                    label: 'Total Saldo',
-                    data: rawSaldoAkhir,
-                    borderColor: '#3B82F6',
-                    backgroundColor: createGradient(ctx, 'rgba(59, 130, 246, 0.5)', 'rgba(59, 130, 246, 0.0)'),
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#FFFFFF',
-                    pointBorderColor: '#3B82F6',
-                    pointBorderWidth: 2
-                }];
+            if (hasData) {
+                if (currentType === 'bar') {
+                    datasets = [{
+                        label: 'Perubahan Saldo',
+                        data: saldoAwal.map((v, i) => [v, saldoAkhir[i]]),
+                        backgroundColor: colors,
+                        borderRadius: 4,
+                        barPercentage: 0.96,
+                        categoryPercentage: 0.96
+                    }];
+                } else {
+                    datasets = [{
+                        label: 'Total Saldo',
+                        data: saldoAkhir,
+                        borderColor: '#3B82F6',
+                        backgroundColor: createGradient(ctx, 'rgba(59, 130, 246, 0.5)', 'rgba(59, 130, 246, 0.0)'),
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#3B82F6',
+                        pointBorderWidth: 2
+                    }];
+                }
             }
 
-            // Tentukan min/max index awal
-            const startIndex = getStartIndexForRange(initialRange);
-            const maxIndex = rawLabels.length - 1;
-            
-            // Hitung Global Max untuk Limit Atas Chart
-            // Gabungkan semua kemungkinan nilai tinggi
-            let allValues = [...rawSaldoAwal, ...rawSaldoAkhir];
+            const maxIndex = labels.length - 1;
+            const showTooltip = hasData;
+
+            let allValues = [];
+            if (hasData) {
+                allValues = [...saldoAwal, ...saldoAkhir];
+            } else {
+                allValues = [0];
+            }
             let globalMax = Math.max(...allValues);
-            if (!isFinite(globalMax)) globalMax = 0;
+            if (!isFinite(globalMax) || globalMax < 0) globalMax = 0;
 
             chart = new Chart(ctx, {
                 type: currentType,
                 data: {
-                    labels: rawLabels,
+                    labels: labels,
                     datasets: datasets
                 },
                 options: {
@@ -1158,6 +1228,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            enabled: showTooltip,
                             mode: 'index',
                             intersect: false,
                             backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
@@ -1169,9 +1240,9 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                             callbacks: {
                                 label: function(context) {
                                     let val = context.raw;
-                                    if(currentType === 'bar') {
-                                       let diff = val[1] - val[0];
-                                       return ` ${diff > 0 ? '+' : ''}Rp${Math.abs(diff).toLocaleString('id-ID')}`;
+                                    if (currentType === 'bar') {
+                                        let diff = val[1] - val[0];
+                                        return ` ${diff > 0 ? '+' : ''}Rp${Math.abs(diff).toLocaleString('id-ID')}`;
                                     } else {
                                         return ` Rp${val.toLocaleString('id-ID')}`;
                                     }
@@ -1180,8 +1251,8 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                         },
                         zoom: {
                             limits: {
-                                x: {min: 0, max: maxIndex}, 
-                                y: {min: 0, max: globalMax + 2000000} // Batas atas (Limits) = ATH + 2 Juta
+                                x: {min: 0, max: Math.max(maxIndex, 0)}, 
+                                y: {min: 0, max: globalMax + 2000000}
                             },
                             zoom: {
                                 wheel: { enabled: true, speed: 0.1 }, 
@@ -1191,16 +1262,16 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                             },
                             pan: { 
                                 enabled: true, 
-                                mode: 'x', // Default X only (Auto Fit ON)
-                                threshold: 0, // Langsung response saat didrag
+                                mode: 'x', 
+                                threshold: 0, 
                                 onPan: syncStatsAndView 
                             }
                         }
                     },
                     scales: {
                         x: {
-                            min: startIndex, // Mulai dari sini
-                            max: maxIndex,   // Sampai akhir
+                            min: 0,
+                            max: Math.max(maxIndex, 0),
                             grid: { display: false },
                             ticks: { 
                                 color: textColor,
@@ -1225,10 +1296,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     }
                 }
             });
-            
-            // Trigger manual sekali untuk set stats & Y scale
-            // Gunakan timeout agar chart render dulu
-            setTimeout(() => syncStatsAndView({chart: chart}), 100);
+
+            if (hasData) {
+                setTimeout(() => syncStatsAndView({chart: chart}), 100);
+            }
         }
 
         // Event Listeners
@@ -1236,7 +1307,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             currentType = 'bar';
             this.classList.add('active');
             document.getElementById('btnGaris').classList.remove('active');
-            const activeRangeBtn = document.querySelector('.btn-range.active');
+            const activeRangeBtn = document.querySelector('.chart-range.active');
             updateChart(activeRangeBtn ? activeRangeBtn.dataset.range : 'ALL');
         });
 
@@ -1244,38 +1315,21 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             currentType = 'line';
             this.classList.add('active');
             document.getElementById('btnBatang').classList.remove('active');
-            const activeRangeBtn = document.querySelector('.btn-range.active');
+            const activeRangeBtn = document.querySelector('.chart-range.active');
             updateChart(activeRangeBtn ? activeRangeBtn.dataset.range : 'ALL');
         });
         
         document.getElementById('btnAutoFit').addEventListener('click', toggleAutoFit);
 
         // Range Buttons: Kini hanya mengubah Scale
-        document.querySelectorAll('.btn-range').forEach(btn => {
+        document.querySelectorAll('.chart-range').forEach(btn => {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.chart-range').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
                 const range = this.dataset.range;
-                
-                // Simpan pilihan ke localStorage
                 localStorage.setItem('chartRange', range);
-                
-                const newStart = getStartIndexForRange(range);
-                const maxIdx = rawLabels.length - 1;
-
-                // Update scale options
-                if(chart && chart.options && chart.options.scales && chart.options.scales.x) {
-                    chart.options.scales.x.min = newStart;
-                    chart.options.scales.x.max = maxIdx;
-                    chart.update(); // Animate changes
-                    
-                    // Update stats & Y-Axis immediately
-                    setTimeout(() => syncStatsAndView({chart}), 50);
-                } else {
-                    // Fallback jika chart belum ada (jarang terjadi)
-                    updateChart(range);
-                }
+                updateChart(range);
             });
         });
 
@@ -1283,7 +1337,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         const savedRange = localStorage.getItem('chartRange') || 'ALL';
         
         // Set tombol aktif sesuai pilihan tersimpan
-        document.querySelectorAll('.btn-range').forEach(btn => {
+        document.querySelectorAll('.chart-range').forEach(btn => {
             if (btn.dataset.range === savedRange) {
                 btn.classList.add('active');
             } else {
