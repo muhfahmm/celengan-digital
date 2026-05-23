@@ -1164,8 +1164,8 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 // Kita set ke floor langsung agar "nempel" sesuai request sebelumnya, 
                 // chart.js biasanya handle stroke well enough.
                 
-                chart.options.scales.y.min = floor; 
-                chart.options.scales.y.max = visibleMax + 2000000;
+                chart.options.scales.y.min = 0;
+                chart.options.scales.y.max = visibleMax;
                 
                 if (chart.options.scales.y.min < 0) chart.options.scales.y.min = 0;
 
@@ -1329,7 +1329,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                         zoom: {
                             limits: {
                                 x: {min: 0, max: Math.max(maxIndex, 0)}, 
-                                y: {min: 0, max: globalMax + 2000000}
+                                y: {min: 0, max: globalMax}
                             },
                             zoom: {
                                 wheel: { enabled: true, speed: 0.1 }, 
