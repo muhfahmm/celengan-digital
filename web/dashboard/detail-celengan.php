@@ -59,8 +59,8 @@ foreach ($transaksi_all as $t) {
     }
 }
 
-// Pagination Logic untuk Tabel
-$limit = 10;
+// Pagination: jumlah baris per halaman = jumlah hari di bulan berjalan (28–31)
+$limit = (int)date('t');
 
 $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
 $count_stmt->execute([$celengan_id]);
@@ -1507,14 +1507,39 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         });
         observer.observe(document.body, { attributes: true });
 
+        function normalizeYear(year) {
+            year = parseInt(year, 10);
+            if (!year) return null;
+            if (year < 100) year += 2000;
+            return year;
+        }
+
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function getDaysInMonth(month, yearStr) {
+            const m = parseInt(month, 10);
+            if (!m || m < 1 || m > 12) return 31;
+
+            if (m === 2) {
+                const y = normalizeYear(yearStr);
+                if (!y || String(yearStr).replace(/\D/g, '').length < 2) return 29;
+                return isLeapYear(y) ? 29 : 28;
+            }
+            if ([4, 6, 9, 11].includes(m)) return 30;
+            return 31;
+        }
+
         function parseDisplayDate(displayStr) {
             const parts = displayStr.trim().split('/');
             if (parts.length !== 3) return null;
             const day = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
-            let year = parseInt(parts[2], 10);
-            if (!day || !month || !year || month < 1 || month > 12 || day < 1 || day > 31) return null;
-            if (year < 100) year += 2000;
+            const year = normalizeYear(parts[2]);
+            if (!day || !month || !year || month < 1 || month > 12 || day < 1) return null;
+            const maxDay = getDaysInMonth(month, parts[2]);
+            if (day > maxDay) return null;
             const iso = `${year}-${pad(month)}-${pad(day)}`;
             const date = new Date(iso + 'T00:00:00');
             if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return null;
@@ -1542,9 +1567,11 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         function fillSegmentsFromPaste(dayInput, monthInput, yearInput, text) {
             const match = text.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
             if (!match) return false;
-            dayInput.value = match[1].padStart(2, '0').slice(-2);
             monthInput.value = match[2].padStart(2, '0').slice(-2);
             yearInput.value = match[3].slice(-2);
+            const maxDay = getDaysInMonth(monthInput.value, yearInput.value);
+            const dayNum = Math.min(parseInt(match[1], 10), maxDay);
+            dayInput.value = pad(dayNum);
             return true;
         }
 
@@ -1626,10 +1653,56 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 if (selectAll) el.select();
             }
 
+            function clampDayToCalendar() {
+                const month = parseInt(monthInput.value, 10);
+                if (!month || month < 1 || month > 12) return;
+                const maxDay = getDaysInMonth(month, yearInput.value);
+                if (!dayInput.value) return;
+                const dayNum = parseInt(dayInput.value, 10);
+                if (dayNum > maxDay) {
+                    dayInput.value = pad(maxDay);
+                }
+            }
+
+            function sanitizeMonthSegment() {
+                sanitizeSegment(monthInput);
+                if (!monthInput.value) return;
+                let month = parseInt(monthInput.value, 10);
+                if (monthInput.value.length >= 2) {
+                    if (month > 12) monthInput.value = '12';
+                    else if (month < 1) monthInput.value = '01';
+                }
+                clampDayToCalendar();
+            }
+
+            function sanitizeDaySegment() {
+                sanitizeSegment(dayInput);
+                if (!dayInput.value) return;
+
+                const month = parseInt(monthInput.value, 10);
+                if (month >= 1 && month <= 12) {
+                    const maxDay = getDaysInMonth(month, yearInput.value);
+                    if (dayInput.value.length === 1) {
+                        const maxFirst = Math.floor(maxDay / 10);
+                        if (parseInt(dayInput.value, 10) > maxFirst) {
+                            dayInput.value = String(maxFirst);
+                        }
+                    } else {
+                        const dayNum = parseInt(dayInput.value, 10);
+                        if (dayNum > maxDay) {
+                            dayInput.value = pad(maxDay);
+                        }
+                    }
+                }
+            }
+
             function commitEdit() {
+                clampDayToCalendar();
                 const selectedDate = segmentsToIso(dayInput.value, monthInput.value, yearInput.value);
                 if (!selectedDate) {
-                    alert('Format tanggal tidak valid. Gunakan DD/MM/YY.');
+                    const month = parseInt(monthInput.value, 10);
+                    const maxDay = month ? getDaysInMonth(month, yearInput.value) : 31;
+                    alert(`Tanggal tidak valid. Bulan ini hanya memiliki ${maxDay} hari.`);
                     focusSegment(0, true);
                     return;
                 }
@@ -1646,7 +1719,15 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
             function wireSegment(input, index) {
                 input.addEventListener('input', function() {
-                    sanitizeSegment(input);
+                    if (input.dataset.part === 'day') {
+                        sanitizeDaySegment();
+                    } else if (input.dataset.part === 'month') {
+                        sanitizeMonthSegment();
+                    } else {
+                        sanitizeSegment(input);
+                        clampDayToCalendar();
+                    }
+
                     if (input.value.length >= parseInt(input.maxLength, 10) && index < segments.length - 1) {
                         focusSegment(index + 1, true);
                     }
@@ -1687,6 +1768,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     event.preventDefault();
                     const text = (event.clipboardData || window.clipboardData).getData('text');
                     if (fillSegmentsFromPaste(dayInput, monthInput, yearInput, text)) {
+                        clampDayToCalendar();
                         focusSegment(2, true);
                     } else {
                         const digits = text.replace(/\D/g, '').slice(0, 2);
