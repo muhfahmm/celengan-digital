@@ -466,6 +466,26 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         .range-group { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
 
+        .editable-date {
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .editable-date:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .inline-date-edit {
+            width: 100%;
+            min-width: 120px;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.95rem;
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
+
         /* Pagination Wrapper */
         .pagination-wrapper {
             margin-top: 20px;
@@ -647,7 +667,9 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             .btn-group { width: 100%; }
             .btn { flex: 1; justify-content: center; }
             .chart-controls { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .range-group { width: 100%; justify-content: space-between; }
+            .range-group { width: 100%; justify-content: flex-start; }
+            .header-grid { grid-template-columns: 1fr; gap: 14px; }
+            .header-actions { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -666,9 +688,25 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Main Card: Detail & Stats -->
         <div class="card">
-            <h2><?= htmlspecialchars($celengan['nama_celengan']); ?></h2>
-            <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
-                Dibuat pada: <?= date('d M Y', strtotime($celengan['created_at'])); ?>
+            <div class="header-grid">
+                <div class="header-info">
+                    <h2><?= htmlspecialchars($celengan['nama_celengan']); ?></h2>
+                    <div class="subtitle">Dibuat pada: <?= date('d M Y', strtotime($celengan['created_at'])); ?></div>
+                </div>
+                <div class="header-actions">
+                    <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-success">
+                        <i class="bi bi-plus-lg"></i> Tabung
+                    </a>
+                    <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-warning">
+                        <i class="bi bi-dash-lg"></i> Tarik
+                    </a>
+                    <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-edit">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <button class="btn btn-delete" onclick="openDeleteModal(<?= $celengan['id']; ?>, '<?= htmlspecialchars($celengan['nama_celengan'], ENT_QUOTES); ?>')">
+                        <i class="bi bi-trash"></i> Hapus
+                    </button>
+                </div>
             </div>
 
             <!-- Stats Grid -->
@@ -703,27 +741,6 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             <div class="progress-container">
                 <div class="progress-bar" id="barProgress" style="width: <?= $progress; ?>%;"></div>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="action-bar">
-                <div class="btn-group">
-                    <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-success">
-                        <i class="bi bi-plus-lg"></i> Tabung
-                    </a>
-                    <a href="../transaksi/kurangi-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-warning">
-                        <i class="bi bi-dash-lg"></i> Tarik
-                    </a>
-                </div>
-                <div class="btn-group">
-                    <a href="../data-celengan/edit-celengan.php?id=<?= $celengan['id']; ?>" class="btn btn-edit">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </a>
-                    <button class="btn btn-delete" 
-                       onclick="openDeleteModal(<?= $celengan['id']; ?>, '<?= htmlspecialchars($celengan['nama_celengan'], ENT_QUOTES); ?>')">
-                        <i class="bi bi-trash"></i> Hapus
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- Transaksi History -->
@@ -749,7 +766,9 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                         <tbody>
                             <?php foreach ($transaksi_page as $t): ?>
                             <tr>
-                                <td><?= date('d/m/Y', strtotime($t['tanggal'])); ?></td>
+                                <td class="editable-date" data-id="<?= $t['id']; ?>" data-date="<?= htmlspecialchars($t['tanggal'], ENT_QUOTES); ?>" title="Klik untuk edit tanggal">
+                                    <?= date('d/m/Y', strtotime($t['tanggal'])); ?>
+                                </td>
                                 <td style="font-weight: 500; font-family: monospace;">
                                     <?= rupiah($t['nominal']); ?>
                                 </td>
@@ -1274,6 +1293,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                             max: Math.max(maxIndex, 0),
                             grid: { display: false },
                             ticks: { 
+                                display: false,
                                 color: textColor,
                                 maxTicksLimit: 10,
                                 font: {
@@ -1357,6 +1377,93 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             });
         });
         observer.observe(document.body, { attributes: true });
+
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '';
+            const [year, month, day] = dateStr.split('-');
+            return `${pad(day)}/${pad(month)}/${year}`;
+        }
+
+        function cancelInlineDateEdit(cell, originalDate) {
+            cell.textContent = formatDisplayDate(originalDate);
+        }
+
+        function submitInlineDate(cell, id, newDate, originalDate) {
+            const params = new URLSearchParams();
+            params.append('id', id);
+            params.append('tanggal', newDate);
+
+            fetch('../transaksi/api/api-update-transaksi-date.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cell.dataset.date = data.tanggal;
+                    cell.textContent = formatDisplayDate(data.tanggal);
+                } else {
+                    alert(data.error || 'Gagal menyimpan tanggal.');
+                    cancelInlineDateEdit(cell, originalDate);
+                }
+            })
+            .catch(() => {
+                alert('Gagal menyimpan tanggal. Periksa koneksi.');
+                cancelInlineDateEdit(cell, originalDate);
+            });
+        }
+
+        function startInlineDateEdit(cell) {
+            if (cell.querySelector('input.inline-date-edit')) return;
+
+            const originalDate = cell.dataset.date || '';
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'inline-date-edit';
+            input.value = originalDate;
+
+            cell.textContent = '';
+            cell.appendChild(input);
+            input.focus();
+
+            input.addEventListener('blur', function() {
+                const selectedDate = input.value;
+                if (!selectedDate) {
+                    alert('Tanggal tidak boleh kosong.');
+                    input.focus();
+                    return;
+                }
+                if (selectedDate === originalDate) {
+                    cancelInlineDateEdit(cell, originalDate);
+                    return;
+                }
+                submitInlineDate(cell, cell.dataset.id, selectedDate, originalDate);
+            });
+
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    input.blur();
+                }
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    cancelInlineDateEdit(cell, originalDate);
+                }
+            });
+        }
+
+        document.addEventListener('click', function(event) {
+            const cell = event.target.closest('td.editable-date');
+            if (!cell) return;
+            startInlineDateEdit(cell);
+        });
 
         // Delete Modal Functions
         function openDeleteModal(id, name) {
