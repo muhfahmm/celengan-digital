@@ -65,7 +65,7 @@ $limit = 10;
 $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
 $count_stmt->execute([$celengan_id]);
 $total_transaksi = $count_stmt->fetchColumn();
-$total_pages = max(1, ceil($total_transaksi / $limit));
+$total_pages = max(1, (int)ceil($total_transaksi / $limit));
 
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : $total_pages;
 if ($page < 1) {
@@ -73,6 +73,7 @@ if ($page < 1) {
 } elseif ($page > $total_pages) {
     $page = $total_pages;
 }
+$page = (int)$page;
 
 $offset = ($page - 1) * $limit;
 
@@ -533,15 +534,38 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             background: rgba(59, 130, 246, 0.08);
         }
 
-        .inline-date-edit {
-            width: 100%;
-            min-width: 120px;
+        .inline-date-edit-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 4px 6px;
             border: 1px solid rgba(59, 130, 246, 0.35);
             border-radius: 8px;
-            padding: 4px 8px;
-            font-size: 0.95rem;
             background: var(--bg-body);
+        }
+
+        .inline-date-segment {
+            width: 2.1em;
+            border: none;
+            outline: none;
+            padding: 0;
+            font-size: 0.95rem;
+            font-family: inherit;
+            text-align: center;
+            background: transparent;
             color: var(--text-main);
+        }
+
+        .inline-date-segment::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .inline-date-sep {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            user-select: none;
+            pointer-events: none;
         }
 
         /* Pagination Wrapper */
@@ -749,7 +773,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             <div class="header-grid">
                 <div class="header-info">
                     <h2><?= htmlspecialchars($celengan['nama_celengan']); ?></h2>
-                    <div class="subtitle">Dibuat pada: <?= date('d M Y', strtotime($celengan['created_at'])); ?></div>
+                    <div class="subtitle">Dibuat pada: <?= date('d/m/Y', strtotime($celengan['created_at'])); ?></div>
                 </div>
                 <div class="header-actions">
                     <a href="../transaksi/tambah-transaksi.php?celengan_id=<?= $celengan['id']; ?>" class="btn btn-success">
@@ -821,11 +845,11 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                                 <th style="text-align: right;">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="transaksi-table-body">
                             <?php foreach ($transaksi_page as $t): ?>
                             <tr>
                                 <td class="editable-date" data-id="<?= $t['id']; ?>" data-date="<?= htmlspecialchars($t['tanggal'], ENT_QUOTES); ?>" title="Klik untuk edit tanggal">
-                                    <?= date('d/m/Y', strtotime($t['tanggal'])); ?>
+                                    <?= date('d/m/y', strtotime($t['tanggal'])); ?>
                                 </td>
                                 <td style="font-weight: 500; font-family: monospace;">
                                     <?= rupiah($t['nominal']); ?>
@@ -857,10 +881,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                    <div class="pagination-wrapper">
+                    <div class="pagination-wrapper" id="pagination-wrapper">
                         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                             <?php $isActive = ($i === $page); ?>
-                            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>" 
+                            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>" data-page="<?= $i ?>" 
                                class="btn-range <?= $isActive ? 'active' : '' ?>"
                                style="text-decoration: none;"
                                title="Halaman <?= $i ?><?= $isActive ? ' (Aktif)' : '' ?>">
@@ -878,6 +902,32 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                 <h3 style="margin: 0;">Analisis Keuangan</h3>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn-filter active" id="btnBatang" title="Grafik Batang"><i class="bi bi-bar-chart"></i></button>
+    <script>
+        // AJAX pagination to prevent full page reload
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('#pagination-wrapper .btn-range');
+            if (!target) return;
+            e.preventDefault();
+            const url = target.getAttribute('href');
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(resp => resp.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    // Update table body
+                    const newTbody = doc.querySelector('#transaksi-table-body');
+                    if (newTbody) {
+                        document.getElementById('transaksi-table-body').innerHTML = newTbody.innerHTML;
+                    }
+                    // Update pagination
+                    const newPag = doc.querySelector('#pagination-wrapper');
+                    if (newPag) {
+                        document.getElementById('pagination-wrapper').innerHTML = newPag.innerHTML;
+                    }
+                })
+                .catch(err => console.error('Pagination error:', err));
+        });
+    </script>
                     <button class="btn-filter" id="btnGaris" title="Grafik Garis"><i class="bi bi-graph-up"></i></button>
                     <button class="btn-filter" onclick="resetScale()" title="Reset Zoom"><i class="bi bi-arrows-move"></i></button>
                     <button class="btn-filter active" id="btnAutoFit" title="Auto Fit Y-Axis"><i class="bi bi-lock-fill"></i></button>
@@ -976,6 +1026,16 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         // Format Rupiah Helper
         function formatRupiah(angka) {
             return 'Rp' + Number(angka).toLocaleString('id-ID');
+        }
+
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '';
+            const [year, month, day] = dateStr.split('-');
+            return `${pad(day)}/${pad(month)}/${year.slice(-2)}`;
         }
 
         // --- Logic Cari Index Start berdasarkan Range Waktu ---
@@ -1322,6 +1382,10 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                             borderWidth: 1,
                             padding: 10,
                             callbacks: {
+                                title: function(items) {
+                                    if (!items.length) return '';
+                                    return formatDisplayDate(items[0].label);
+                                },
                                 label: function(context) {
                                     let val = context.raw;
                                     if (currentType === 'bar') {
@@ -1443,14 +1507,45 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         });
         observer.observe(document.body, { attributes: true });
 
-        function pad(num) {
-            return num.toString().padStart(2, '0');
+        function parseDisplayDate(displayStr) {
+            const parts = displayStr.trim().split('/');
+            if (parts.length !== 3) return null;
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            let year = parseInt(parts[2], 10);
+            if (!day || !month || !year || month < 1 || month > 12 || day < 1 || day > 31) return null;
+            if (year < 100) year += 2000;
+            const iso = `${year}-${pad(month)}-${pad(day)}`;
+            const date = new Date(iso + 'T00:00:00');
+            if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return null;
+            return iso;
         }
 
-        function formatDisplayDate(dateStr) {
-            if (!dateStr) return '';
-            const [year, month, day] = dateStr.split('-');
-            return `${pad(day)}/${pad(month)}/${year}`;
+        function isoToSegments(iso) {
+            if (!iso) return { day: '', month: '', year: '' };
+            const [y, m, d] = iso.split('-');
+            return {
+                day: pad(parseInt(d, 10)),
+                month: pad(parseInt(m, 10)),
+                year: (y || '').slice(-2)
+            };
+        }
+
+        function segmentsToIso(dayVal, monthVal, yearVal) {
+            const day = dayVal.replace(/\D/g, '');
+            const month = monthVal.replace(/\D/g, '');
+            const year = yearVal.replace(/\D/g, '');
+            if (!day || !month || year.length < 2) return null;
+            return parseDisplayDate(`${day}/${month}/${year}`);
+        }
+
+        function fillSegmentsFromPaste(dayInput, monthInput, yearInput, text) {
+            const match = text.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+            if (!match) return false;
+            dayInput.value = match[1].padStart(2, '0').slice(-2);
+            monthInput.value = match[2].padStart(2, '0').slice(-2);
+            yearInput.value = match[3].slice(-2);
+            return true;
         }
 
         function cancelInlineDateEdit(cell, originalDate) {
@@ -1486,23 +1581,56 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
         }
 
         function startInlineDateEdit(cell) {
-            if (cell.querySelector('input.inline-date-edit')) return;
+            if (cell.querySelector('.inline-date-edit-group')) return;
 
             const originalDate = cell.dataset.date || '';
-            const input = document.createElement('input');
-            input.type = 'date';
-            input.className = 'inline-date-edit';
-            input.value = originalDate;
+            const parts = isoToSegments(originalDate);
 
+            const wrapper = document.createElement('div');
+            wrapper.className = 'inline-date-edit-group';
+
+            function makeSegment(name, value, placeholder, maxLen) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.inputMode = 'numeric';
+                input.className = 'inline-date-segment';
+                input.dataset.part = name;
+                input.placeholder = placeholder;
+                input.maxLength = maxLen;
+                input.value = value;
+                input.setAttribute('aria-label', placeholder);
+                return input;
+            }
+
+            const dayInput = makeSegment('day', parts.day, 'DD', 2);
+            const monthInput = makeSegment('month', parts.month, 'MM', 2);
+            const yearInput = makeSegment('year', parts.year, 'YY', 2);
+
+            const sep1 = document.createElement('span');
+            sep1.className = 'inline-date-sep';
+            sep1.textContent = '/';
+            const sep2 = document.createElement('span');
+            sep2.className = 'inline-date-sep';
+            sep2.textContent = '/';
+
+            wrapper.append(dayInput, sep1, monthInput, sep2, yearInput);
             cell.textContent = '';
-            cell.appendChild(input);
-            input.focus();
+            cell.appendChild(wrapper);
 
-            input.addEventListener('blur', function() {
-                const selectedDate = input.value;
+            const segments = [dayInput, monthInput, yearInput];
+
+            function focusSegment(index, selectAll) {
+                const el = segments[index];
+                if (!el) return;
+                el.focus();
+                if (selectAll) el.select();
+            }
+
+            function commitEdit() {
+                const selectedDate = segmentsToIso(dayInput.value, monthInput.value, yearInput.value);
                 if (!selectedDate) {
-                    alert('Tanggal tidak boleh kosong.');
-                    input.focus();
+                    alert('Format tanggal tidak valid. Gunakan DD/MM/YY.');
+                    focusSegment(0, true);
                     return;
                 }
                 if (selectedDate === originalDate) {
@@ -1510,18 +1638,71 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
                     return;
                 }
                 submitInlineDate(cell, cell.dataset.id, selectedDate, originalDate);
+            }
+
+            function sanitizeSegment(input) {
+                input.value = input.value.replace(/\D/g, '').slice(0, parseInt(input.maxLength, 10));
+            }
+
+            function wireSegment(input, index) {
+                input.addEventListener('input', function() {
+                    sanitizeSegment(input);
+                    if (input.value.length >= parseInt(input.maxLength, 10) && index < segments.length - 1) {
+                        focusSegment(index + 1, true);
+                    }
+                });
+
+                input.addEventListener('keydown', function(event) {
+                    if (event.key === 'Tab' && !event.shiftKey && index < segments.length - 1) {
+                        event.preventDefault();
+                        focusSegment(index + 1, true);
+                        return;
+                    }
+                    if (event.key === 'Tab' && event.shiftKey && index > 0) {
+                        event.preventDefault();
+                        focusSegment(index - 1, true);
+                        return;
+                    }
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        if (index < segments.length - 1) {
+                            focusSegment(index + 1, true);
+                        } else {
+                            commitEdit();
+                        }
+                        return;
+                    }
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        cancelInlineDateEdit(cell, originalDate);
+                        return;
+                    }
+                    if (event.key === 'Backspace' && input.value === '' && index > 0) {
+                        event.preventDefault();
+                        focusSegment(index - 1, true);
+                    }
+                });
+
+                input.addEventListener('paste', function(event) {
+                    event.preventDefault();
+                    const text = (event.clipboardData || window.clipboardData).getData('text');
+                    if (fillSegmentsFromPaste(dayInput, monthInput, yearInput, text)) {
+                        focusSegment(2, true);
+                    } else {
+                        const digits = text.replace(/\D/g, '').slice(0, 2);
+                        input.value = digits;
+                    }
+                });
+            }
+
+            segments.forEach(wireSegment);
+
+            wrapper.addEventListener('focusout', function(event) {
+                if (wrapper.contains(event.relatedTarget)) return;
+                commitEdit();
             });
 
-            input.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    input.blur();
-                }
-                if (event.key === 'Escape') {
-                    event.preventDefault();
-                    cancelInlineDateEdit(cell, originalDate);
-                }
-            });
+            focusSegment(0, true);
         }
 
         document.addEventListener('click', function(event) {
