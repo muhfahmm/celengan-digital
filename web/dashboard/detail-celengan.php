@@ -116,7 +116,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-body);
             color: var(--text-main);
             margin: 0;
             padding: 0;
@@ -132,10 +132,7 @@ $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(138, 92, 246, 0.3), transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.2), transparent 50%);
+            background: none;
             pointer-events: none;
             z-index: 0;
         }

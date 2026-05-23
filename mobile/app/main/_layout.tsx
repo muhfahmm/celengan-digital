@@ -2,10 +2,12 @@ import { Tabs } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+    const insets = useSafeAreaInsets();
 
     return (
         <Tabs
@@ -15,8 +17,8 @@ export default function TabLayout() {
                     backgroundColor: isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                     borderTopWidth: 0,
                     elevation: 0,
-                    height: 60,
-                    paddingBottom: 8,
+                    height: 60 + insets.bottom,
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
                     paddingTop: 8,
                 },
                 tabBarActiveTintColor: Colors.primary,
