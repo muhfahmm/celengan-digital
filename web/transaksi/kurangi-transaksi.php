@@ -20,8 +20,11 @@ if ($celengan_id) {
 
 // Jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nominal = $_POST['nominal'];
-    $keterangan = $_POST['keterangan'];
+    $nominalRaw = $_POST['nominal'];
+    $keterangan = $_POST['keterangan'] ?? '';
+
+    // Sanitasi input: ambil hanya digit
+    $nominal = (int) preg_replace('/\D/', '', $nominalRaw);
 
     if ($nominal > 0) {
         // Kurangi total celengan
@@ -187,9 +190,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: rgba(255, 255, 255, 0.8);
         }
 
+        input[type="text"],
         input[type="number"],
         textarea {
-            width: 100%;
+            width: 100% !important;
+            box-sizing: border-box;
             padding: 12px 16px;
             border: 2px solid rgba(0, 0, 0, 0.1);
             border-radius: 12px;
@@ -199,9 +204,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #1F2937;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 500;
+            display: block;
         }
 
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {-moz-appearance: textfield; appearance: textfield;}
+
         body.dark input[type="number"],
+        body.dark input[type="text"],
         body.dark textarea {
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(255, 255, 255, 0.1);
@@ -213,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             min-height: 80px;
         }
 
+        input[type="text"]:focus,
         input[type="number"]:focus,
         textarea:focus {
             outline: none;
@@ -230,6 +245,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         input::placeholder,
         textarea::placeholder {
             color: #9CA3AF;
+        }
+
+        /* Stronger selector to ensure full-width inputs inside the form container */
+        .form-container .form-group input,
+        .form-container input,
+        .form-container textarea,
+        .form-container select {
+            width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
         }
 
         button {
@@ -362,24 +387,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label for="nominal">Nominal (Rp)</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     id="nominal"
                     name="nominal" 
-                    placeholder="Contoh: 50000"
-                    min="1"
-                    step="1"
+                    placeholder="Contoh: 1.000"
                     required
+                    oninput="formatCurrency(this)"
                 >
             </div>
 
             <div class="form-group">
                 <label for="keterangan">Keterangan</label>
-                <textarea 
+                <input 
+                    type="text" 
                     id="keterangan"
                     name="keterangan" 
-                    rows="3" 
                     placeholder="Contoh: Pengeluaran harian"
-                ></textarea>
+                    autocomplete="off"
+                >
             </div>
 
             <button type="submit">
@@ -417,6 +442,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             localStorage.setItem("theme", isDark ? "dark" : "light");
             applyTheme(isDark);
         });
+
+        // Number formatting for nominal input (same behavior as Tambah Transaksi)
+        function formatCurrency(el) {
+            const digits = el.value.replace(/\D/g, "");
+            if (digits === "") {
+                el.value = "";
+                return;
+            }
+            el.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Ensure raw number is submitted (remove thousand separator dots)
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const nominalInput = document.getElementById('nominal');
+                if (nominalInput) {
+                    nominalInput.value = nominalInput.value.replace(/\./g, '');
+                }
+            });
+        }
     </script>
 </body>
 </html>

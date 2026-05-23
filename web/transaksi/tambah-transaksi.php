@@ -154,7 +154,8 @@ if (!$celengan) {
         input[type="number"],
         input[type="text"],
         select {
-            width: 100%;
+            width: 100% !important;
+            box-sizing: border-box;
             padding: 12px 16px;
             border: 2px solid rgba(0, 0, 0, 0.1);
             border-radius: 12px;
@@ -164,7 +165,16 @@ if (!$celengan) {
             color: #1F2937;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 500;
+            display: block;
         }
+
+        /* Remove browser default number input chrome */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {-moz-appearance: textfield; appearance: textfield;}
 
         body.dark input[type="number"],
         body.dark input[type="text"],
@@ -196,6 +206,16 @@ if (!$celengan) {
 
         input::placeholder {
             color: #9CA3AF;
+        }
+
+        /* Stronger selector to ensure full-width inputs inside the form container */
+        .form-container .form-group input,
+        .form-container input,
+        .form-container textarea,
+        .form-container select {
+            width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
         }
 
         select option {
@@ -334,23 +354,16 @@ if (!$celengan) {
             <div class="form-group">
                 <label for="nominal">Nominal (Rp)</label>
                 <input 
-                    type="number" 
+                    type="text" 
                     id="nominal"
                     name="nominal" 
-                    placeholder="Contoh: 50000"
-                    min="1"
-                    step="1"
+                    placeholder="Contoh: 1.000"
                     required
+                    oninput="formatCurrency(this)"
                 >
             </div>
 
-            <div class="form-group">
-                <label for="tipe">Tipe Transaksi</label>
-                <select name="tipe" id="tipe" required>
-                    <option value="masuk">Masuk (Tambah Saldo)</option>
-                    <option value="keluar">Keluar (Kurangi Saldo)</option>
-                </select>
-            </div>
+            <input type="hidden" name="tipe" value="masuk">
 
             <div class="form-group">
                 <label for="keterangan">Keterangan (Opsional)</label>
@@ -398,6 +411,25 @@ if (!$celengan) {
             localStorage.setItem("theme", isDark ? "dark" : "light");
             applyTheme(isDark);
         });
-    </script>
-</body>
+
+        // Number formatting for nominal input
+        function formatCurrency(el) {
+            const digits = el.value.replace(/\D/g, "");
+            if (digits === "") {
+                el.value = "";
+                return;
+            }
+            el.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        // Ensure raw number is submitted
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const nominalInput = document.getElementById('nominal');
+                if (nominalInput) {
+                    nominalInput.value = nominalInput.value.replace(/\./g, '');
+                }
+            });
+        }
+    </script></body>
 </html>

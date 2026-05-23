@@ -61,13 +61,20 @@ foreach ($transaksi_all as $t) {
 
 // Pagination Logic untuk Tabel
 $limit = 10;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
 
 $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
 $count_stmt->execute([$celengan_id]);
 $total_transaksi = $count_stmt->fetchColumn();
-$total_pages = ceil($total_transaksi / $limit);
+$total_pages = max(1, ceil($total_transaksi / $limit));
+
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : $total_pages;
+if ($page < 1) {
+    $page = 1;
+} elseif ($page > $total_pages) {
+    $page = $total_pages;
+}
+
+$offset = ($page - 1) * $limit;
 
 $stmt_page = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal ASC LIMIT ? OFFSET ?");
 $stmt_page->bindValue(1, $celengan_id, PDO::PARAM_INT);

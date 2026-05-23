@@ -306,14 +306,14 @@ if (!$celengan) {
             <div class="form-group">
                 <label for="target">Target (Rp)</label>
                 <input 
-                    type="number" 
-                    id="target"
-                    name="target" 
-                    value="<?= htmlspecialchars($celengan['target']); ?>" 
-                    placeholder="Contoh: 5000000"
-                    min="0"
-                    step="1000"
-                    required
+                    type="text" 
+                     id="target"
+                     name="target" 
+                     value="<?php echo htmlspecialchars($celengan['target']); ?>" 
+                     placeholder="Contoh: 5000000"
+                     min="0"
+                     step="1000"
+                     required oninput="formatCurrency(this)"
                 >
             </div>
 
@@ -342,6 +342,17 @@ if (!$celengan) {
                 themeIcon.classList.replace("bi-sun", "bi-moon");
             }
         }
+        // Currency formatting function
+        function formatCurrency(el) {
+          let value = el.value.replace(/\D/g, "");
+          el.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        // Strip formatting before submit
+        const formEdit = document.querySelector('form');
+        formEdit.addEventListener('submit', function(e) {
+          const targetInput = document.getElementById('target');
+          targetInput.value = targetInput.value.replace(/\./g, '');
+        });
 
         const savedTheme = localStorage.getItem("theme") === "dark";
         applyTheme(savedTheme);

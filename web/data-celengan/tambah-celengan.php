@@ -356,15 +356,15 @@ require_once('../config/auth_check.php');
 
             <div class="form-group">
                 <label for="target">Target (Rp)</label>
-                <input 
-                    type="number" 
-                    id="target"
-                    name="target" 
-                    placeholder="Contoh: 5000000"
-                    min="1"
-                    step="1000"
-                    required
-                >
+                    <input 
+                        type="text" 
+                        id="target"
+                        name="target" 
+                        placeholder="Contoh: 5000000"
+                        min="1"
+                        step="1000"
+                        required oninput="formatCurrency(this)"
+                    >
                 <div class="info-text">Masukkan target tabungan yang ingin dicapai</div>
             </div>
 
@@ -404,6 +404,18 @@ require_once('../config/auth_check.php');
                 themeIcon.classList.replace("bi-sun", "bi-moon");
             }
         }
+
+		// Currency formatting function
+		function formatCurrency(el) {
+		  let value = el.value.replace(/\D/g, "");
+		  el.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+		}
+		// Strip formatting before submit
+		const formCreate = document.querySelector('form');
+		formCreate.addEventListener('submit', function(e) {
+		  const targetInput = document.getElementById('target');
+		  targetInput.value = targetInput.value.replace(/\./g, '');
+		});
 
         const savedTheme = localStorage.getItem("theme") === "dark";
         applyTheme(savedTheme);
