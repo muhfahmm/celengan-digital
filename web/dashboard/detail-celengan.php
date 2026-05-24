@@ -25,64 +25,48 @@ $progress = $celengan['target'] > 0 ? round(($celengan['total'] / $celengan['tar
 $kekurangan = $celengan['target'] - $celengan['total'];
 if ($kekurangan < 0) $kekurangan = 0;
 
+// Riwayat transaksi hanya untuk satu bulan agar tidak tercampur dengan bulan lain.
+// Jika bulan sekarang tidak memiliki transaksi, gunakan bulan terakhir yang ada data.
+$historyMonth = (int) date('n');
+$historyYear = (int) date('Y');
+
 function rupiah($angka)
 {
     return 'Rp' . number_format($angka, 0, ',', '.');
 }
 
-// Persiapan Data Chart (Semua data untuk perhitungan saldo)
-$total = 0;
-$ath = 0; // All Time High Variable
-$labels = [];
-$saldo_awal = [];
-$saldo_akhir = [];
-$colors = [];
+include_once('chart.php');
+$chartData = prepareChartData($transaksi_all);
+$labels = $chartData['labels'];
+$saldo_awal = $chartData['saldo_awal'];
+$saldo_akhir = $chartData['saldo_akhir'];
+$colors = $chartData['colors'];
+$ath = $chartData['ath'];
 
-foreach ($transaksi_all as $t) {
-    $labels[] = $t['tanggal'];
-    $saldo_awal[] = $total;
-
-    $nominal = (float)$t['nominal'];
-    if (strtolower($t['tipe']) == 'masuk') {
-        $total += $nominal;
-        $colors[] = '#10B981'; // Modern Green (Emerald-500)
-    } else {
-        $total -= $nominal;
-        $colors[] = '#EF4444'; // Modern Red (Red-500)
-    }
-
-    $saldo_akhir[] = $total;
-
-    // Cek All Time High
-    if ($total > $ath) {
-        $ath = $total;
-    }
-}
-
-// Pagination: jumlah baris per halaman = jumlah hari di bulan berjalan (28–31)
-$limit = (int)date('t');
-
-$count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ?");
-$count_stmt->execute([$celengan_id]);
+$count_stmt = $pdo->prepare("SELECT COUNT(*) FROM transaksi WHERE celengan_id = ? AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?");
+$count_stmt->execute([$celengan_id, $historyMonth, $historyYear]);
 $total_transaksi = $count_stmt->fetchColumn();
-$total_pages = max(1, (int)ceil($total_transaksi / $limit));
 
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : $total_pages;
-if ($page < 1) {
-    $page = 1;
-} elseif ($page > $total_pages) {
-    $page = $total_pages;
+if ($total_transaksi == 0) {
+    $latest_stmt = $pdo->prepare("SELECT tanggal FROM transaksi WHERE celengan_id = ? ORDER BY tanggal DESC LIMIT 1");
+    $latest_stmt->execute([$celengan_id]);
+    $latest_transaksi = $latest_stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($latest_transaksi && !empty($latest_transaksi['tanggal'])) {
+        $latestDate = strtotime($latest_transaksi['tanggal']);
+        $historyMonth = (int) date('n', $latestDate);
+        $historyYear = (int) date('Y', $latestDate);
+
+        $count_stmt->execute([$celengan_id, $historyMonth, $historyYear]);
+        $total_transaksi = $count_stmt->fetchColumn();
+    }
 }
-$page = (int)$page;
 
-$offset = ($page - 1) * $limit;
-
-$stmt_page = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? ORDER BY tanggal ASC LIMIT ? OFFSET ?");
-$stmt_page->bindValue(1, $celengan_id, PDO::PARAM_INT);
-$stmt_page->bindValue(2, $limit, PDO::PARAM_INT);
-$stmt_page->bindValue(3, $offset, PDO::PARAM_INT);
-$stmt_page->execute();
+$stmt_page = $pdo->prepare("SELECT * FROM transaksi WHERE celengan_id = ? AND MONTH(tanggal) = ? AND YEAR(tanggal) = ? ORDER BY tanggal ASC");
+$stmt_page->execute([$celengan_id, $historyMonth, $historyYear]);
 $transaksi_page = $stmt_page->fetchAll(PDO::FETCH_ASSOC);
+
+$total_pages = 1;
 ?>
 
 <!DOCTYPE html>
