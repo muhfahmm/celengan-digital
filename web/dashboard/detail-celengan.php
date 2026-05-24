@@ -752,8 +752,10 @@ $total_pages = 1;
             .range-group { width: 100%; justify-content: flex-start; }
             .header-grid { grid-template-columns: 1fr; gap: 14px; }
             .header-actions { justify-content: flex-start; }
-            .top-nav { flex-direction: column; align-items: stretch; gap: 12px; }
-            .top-actions { justify-content: flex-end; }
+            /* Keep top nav horizontal on small screens so back + icons align */
+            .top-nav { flex-direction: row; align-items: center; gap: 8px; }
+            .top-actions { justify-content: flex-end; margin-left: auto; display: flex; gap: 8px; }
+            .btn-back { display: inline-flex; align-items: center; gap: 8px; }
         }
     </style>
 </head>
@@ -832,75 +834,14 @@ $total_pages = 1;
             </div>
         </div>
 
-        <!-- Transaksi History -->
-        <div class="card" id="riwayat-transaksi">
+        <!-- Transaksi History moved to separate page -->
+        <div class="card">
             <h3>Riwayat Transaksi</h3>
-            <?php if (empty($transaksi_page)): ?>
-                <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
-                    <i class="bi bi-receipt" style="font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
-                    Belum ada transaksi.
-                </div>
-            <?php else: ?>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Nominal</th>
-                                <th>Tipe</th>
-                                <th>Keterangan</th>
-                                <th style="text-align: right;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transaksi-table-body">
-                            <?php foreach ($transaksi_page as $t): ?>
-                            <tr>
-                                <td class="editable-date" data-id="<?= $t['id']; ?>" data-date="<?= htmlspecialchars($t['tanggal'], ENT_QUOTES); ?>" title="Klik untuk edit tanggal">
-                                    <?= date('d/m/y', strtotime($t['tanggal'])); ?>
-                                </td>
-                                <td style="font-weight: 500; font-family: monospace;">
-                                    <?= rupiah($t['nominal']); ?>
-                                </td>
-                                <td>
-                                    <?php $isMasuk = strtolower($t['tipe']) == 'masuk'; ?>
-                                    <span class="type-badge <?= $isMasuk ? 'type-in' : 'type-out'; ?>">
-                                        <?= $isMasuk ? '<i class="bi bi-arrow-down"></i> Masuk' : '<i class="bi bi-arrow-up"></i> Keluar'; ?>
-                                    </span>
-                                </td>
-                                <td style="color: var(--text-secondary);"><?= htmlspecialchars($t['keterangan']); ?></td>
-                                <td style="text-align: right;">
-                                    <a href="../transaksi/edit-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" 
-                                       style="color: var(--primary-color); margin-right: 8px;">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="../transaksi/hapus-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" 
-                                       style="color: #EF4444;"
-                                       onclick="return confirm('Hapus transaksi ini?')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-
-                <!-- Pagination -->
-                <?php if ($total_pages > 1): ?>
-                    <div class="pagination-wrapper" id="pagination-wrapper">
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <?php $isActive = ($i === $page); ?>
-                            <a href="?id=<?= $celengan_id ?>&page=<?= $i ?>" data-page="<?= $i ?>" 
-                               class="btn-range <?= $isActive ? 'active' : '' ?>"
-                               style="text-decoration: none;"
-                               title="Halaman <?= $i ?><?= $isActive ? ' (Aktif)' : '' ?>">
-                                <?= $i ?>
-                            </a>
-                        <?php endfor; ?>
-                    </div>
-                <?php endif; ?>
-            <?php endif; ?>
+            <div style="padding:14px;">
+                <a href="riwayat-transaksi.php?id=<?= $celengan_id; ?>" class="btn btn-primary" style="text-decoration:none;">
+                    <i class="bi bi-clock-history"></i> Lihat Riwayat Transaksi
+                </a>
+            </div>
         </div>
 
         <!-- Chart Section -->
@@ -909,32 +850,6 @@ $total_pages = 1;
                 <h3 style="margin: 0;">Analisis Keuangan</h3>
                 <div style="display: flex; gap: 8px;">
                     <button class="btn-filter active" id="btnBatang" title="Grafik Batang"><i class="bi bi-bar-chart"></i></button>
-    <script>
-        // AJAX pagination to prevent full page reload
-        document.addEventListener('click', function(e) {
-            const target = e.target.closest('#pagination-wrapper .btn-range');
-            if (!target) return;
-            e.preventDefault();
-            const url = target.getAttribute('href');
-            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(resp => resp.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    // Update table body
-                    const newTbody = doc.querySelector('#transaksi-table-body');
-                    if (newTbody) {
-                        document.getElementById('transaksi-table-body').innerHTML = newTbody.innerHTML;
-                    }
-                    // Update pagination
-                    const newPag = doc.querySelector('#pagination-wrapper');
-                    if (newPag) {
-                        document.getElementById('pagination-wrapper').innerHTML = newPag.innerHTML;
-                    }
-                })
-                .catch(err => console.error('Pagination error:', err));
-        });
-    </script>
                     <button class="btn-filter" id="btnGaris" title="Grafik Garis"><i class="bi bi-graph-up"></i></button>
                     <button class="btn-filter" onclick="resetScale()" title="Reset Zoom"><i class="bi bi-arrows-move"></i></button>
                     <button class="btn-filter active" id="btnAutoFit" title="Auto Fit Y-Axis"><i class="bi bi-lock-fill"></i></button>

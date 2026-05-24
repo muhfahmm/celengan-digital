@@ -68,7 +68,7 @@ function rupiah($angka) { return 'Rp' . number_format($angka, 0, ',', '.'); }
 </head>
 <body>
     <div class="top-nav">
-        <a href="index.php" class="btn-back">&larr; Kembali ke Dashboard</a>
+        <a href="detail-celengan.php?id=<?= $celengan_id; ?>" class="btn-back">&larr; Kembali ke Dashboard</a>
         <div class="top-actions">
             <button id="themeToggle" title="Ganti Tema"><i class="bi bi-sun"></i></button>
         </div>
@@ -81,9 +81,16 @@ function rupiah($angka) { return 'Rp' . number_format($angka, 0, ',', '.'); }
         <?php if (empty($transaksi)): ?>
             <div class="empty">Belum ada transaksi pada periode ini.</div>
         <?php else: ?>
+            <div style="overflow-x:auto;">
             <table class="table">
                 <thead>
-                    <tr><th>Tanggal</th><th>Nominal</th><th>Tipe</th><th>Keterangan</th></tr>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Nominal</th>
+                        <th>Tipe</th>
+                        <th>Keterangan</th>
+                        <th style="text-align:right;">Aksi</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($transaksi as $t): ?>
@@ -92,10 +99,19 @@ function rupiah($angka) { return 'Rp' . number_format($angka, 0, ',', '.'); }
                             <td style="font-family:monospace"><?= rupiah($t['nominal']); ?></td>
                             <td><?= strtolower($t['tipe']) == 'masuk' ? '<span class="badge-in">Masuk</span>' : '<span class="badge-out">Keluar</span>'; ?></td>
                             <td style="color:var(--muted)"><?= htmlspecialchars($t['keterangan']); ?></td>
+                            <td style="text-align:right; white-space:nowrap;">
+                                <a href="../transaksi/edit-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" style="color:#67a7ff; margin-right:8px; text-decoration:none;"> 
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="../transaksi/hapus-transaksi.php?id=<?= $t['id']; ?>&celengan_id=<?= $celengan_id; ?>" style="color:#ff6b6b; text-decoration:none;" onclick="return confirm('Hapus transaksi ini?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php endif; ?>
     </div>
 
