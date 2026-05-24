@@ -335,9 +335,19 @@ function rupiah($angka) {
 
         .sort-filters {
             display: flex;
+            flex-wrap: nowrap;
             gap: 8px;
             overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
             padding-bottom: 4px;
+            min-width: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sort-filters span,
+        .sort-filters .btn-filter {
+            flex: 0 0 auto;
         }
 
         .btn-filter {

@@ -178,17 +178,32 @@ $total_pages = 1;
             color: var(--primary-color);
         }
 
-        .theme-toggle {
+        .theme-toggle,
+        .history-toggle {
             cursor: pointer;
             font-size: 20px;
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px;
             border-radius: 50%;
-            transition: background 0.2s;
-            color: var(--text-main);
+            transition: background 0.2s, color 0.2s;
+            color: #ffffff; /* white icons */
+            border: none;
+            background: transparent;
         }
 
-        .theme-toggle:hover {
+        .theme-toggle:hover,
+        .history-toggle:hover {
             background: rgba(128, 128, 128, 0.1);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* Cards */
@@ -290,16 +305,17 @@ $total_pages = 1;
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
             margin-bottom: 20px;
+            align-items: stretch;
         }
         
         .stat-item {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
-            padding: 20px;
+            padding: 16px;
             border-radius: 16px;
             box-shadow: 
                 0 8px 32px 0 rgba(31, 38, 135, 0.2),
@@ -736,6 +752,8 @@ $total_pages = 1;
             .range-group { width: 100%; justify-content: flex-start; }
             .header-grid { grid-template-columns: 1fr; gap: 14px; }
             .header-actions { justify-content: flex-start; }
+            .top-nav { flex-direction: column; align-items: stretch; gap: 12px; }
+            .top-actions { justify-content: flex-end; }
         }
     </style>
 </head>
@@ -747,8 +765,13 @@ $total_pages = 1;
             <a href="index.php" class="btn-back">
                 <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
             </a>
-            <div id="darkToggle" class="theme-toggle" title="Ganti Tema">
-                <i id="themeIcon" class="bi bi-moon"></i>
+            <div class="top-actions">
+                <button id="historyToggle" class="history-toggle" type="button" title="Riwayat Transaksi">
+                    <i class="bi bi-clock-history"></i>
+                </button>
+                <div id="darkToggle" class="theme-toggle" title="Ganti Tema">
+                    <i id="themeIcon" class="bi bi-moon"></i>
+                </div>
             </div>
         </div>
 
@@ -810,7 +833,7 @@ $total_pages = 1;
         </div>
 
         <!-- Transaksi History -->
-        <div class="card">
+        <div class="card" id="riwayat-transaksi">
             <h3>Riwayat Transaksi</h3>
             <?php if (empty($transaksi_page)): ?>
                 <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
@@ -963,6 +986,8 @@ $total_pages = 1;
         // --- 1. Theme Logic ---
         const themeIcon = document.getElementById("themeIcon");
         const darkToggle = document.getElementById("darkToggle");
+        const historyToggle = document.getElementById("historyToggle");
+        const historySection = document.getElementById("riwayat-transaksi");
         
         function applyTheme(isDark) {
             if (isDark) {
@@ -983,6 +1008,13 @@ $total_pages = 1;
             localStorage.setItem("theme", isDark ? "dark" : "light");
             applyTheme(isDark);
         });
+
+        if (historyToggle) {
+            historyToggle.addEventListener('click', () => {
+                // Open separate history page for this celengan
+                window.location.href = 'riwayat-transaksi.php?id=<?= $celengan['id']; ?>';
+            });
+        }
 
         // --- 2. Chart Logic ---
         // --- 2. Chart Logic ---
