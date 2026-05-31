@@ -17,6 +17,7 @@ services:
     environment:
       MARIADB_DATABASE: db_celengan
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_ROOT_HOST: "%"
     volumes:
       - mariadb_data:/var/lib/mysql
       - ./web/database/db_celengan.sql:/docker-entrypoint-initdb.d/db_celengan.sql:ro
