@@ -317,7 +317,6 @@ DELIMITER ;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `username` varchar(100) NOT NULL,
-  `email` varchar(150) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -326,9 +325,9 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `created_at`) VALUES
-(1, 'fahiim', 'fahimfahim0407@gmail.com', '$2y$10$VN7kDWdrZYBAnFP1AQZMSeo1.7s7jHzmXdsbGJa7axSHF.9B/JsdC', '2025-10-22 10:30:58'),
-(2, 'admin', 'admin123@gmail.com', '$2y$10$esYE/DeE7nl0.A5m.30rUuu7TehPb.IR2s9A8h7NhXJtPuuDyHR1u', '2025-11-23 04:01:45');
+INSERT INTO `users` (`id`, `username`, `password`, `created_at`) VALUES
+(1, 'fahiim', '$2y$10$VN7kDWdrZYBAnFP1AQZMSeo1.7s7jHzmXdsbGJa7axSHF.9B/JsdC', '2025-10-22 10:30:58'),
+(2, 'admin', '$2y$10$esYE/DeE7nl0.A5m.30rUuu7TehPb.IR2s9A8h7NhXJtPuuDyHR1u', '2025-11-23 04:01:45');
 
 --
 -- Indexes for dumped tables
@@ -353,8 +352,7 @@ ALTER TABLE `transaksi`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
