@@ -1,0 +1,7 @@
+localhost {
+    # Compress responses for better performance
+    encode gzip zstd
+
+    # Proxy all traffic to the Apache container
+    reverse_proxy web:80
+}

@@ -1,5 +1,5 @@
 <?php
-$host = 'localhost';
+$host = 'db';
 $dbname = 'db_celengan';
 $username = 'root';
 $password = '';

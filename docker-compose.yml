@@ -1,7 +1,48 @@
 services:
   web:
-    image: php:8.2-apache
+    build: .
+    container_name: celengan_web
+    restart: unless-stopped
     volumes:
       - .:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - webnet
+
+  db:
+    image: mariadb:10.11
+    container_name: celengan_db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: db_celengan
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./web/database/db_celengan.sql:/docker-entrypoint-initdb.d/db_celengan.sql:ro
+    networks:
+      - webnet
+
+  caddy:
+    image: caddy:latest
+    container_name: celengan_caddy
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    networks:
+      - webnet
+
+networks:
+  webnet:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mariadb_data:
