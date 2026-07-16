@@ -40,3 +40,4 @@ perubahan 36
 perubahan 37
 perubahan 38
 >>>>>>> 6e3fc3c501ba731377936e9127a589c4988e1c11
+39
